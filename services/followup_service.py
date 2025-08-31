@@ -4,7 +4,7 @@ Follow-up Service - Handles follow-up interviews and assessments for returning p
 
 import os
 import warnings
-from google import genai
+import genai
 from google.genai import types
 from typing import Dict, List, Optional
 from datetime import datetime
