@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Medical Pre-Screening - Patient Entry</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1c2f7f 0%, #26bc9f 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .option-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .option-section#faceRecognitionSection {
+            background: linear-gradient(135deg, #fa905d 0%, #e8824a 100%);
+            border: 2px solid #fa905d;
+            color: white;
+        }
+        
+        .option-section#faceRecognitionSection .option-title {
+            color: white;
+        }
+        
+        .option-section#faceRecognitionSection p {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+                border-radius: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+                margin-bottom: 10px;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .option-section {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .option-title {
+                font-size: 1.3rem;
+                margin-bottom: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 12px;
+                font-size: 1rem;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .camera-interface {
+                padding: 15px;
+            }
+            
+            #video {
+                width: 100%;
+                max-width: 300px;
+                height: auto;
+            }
+            
+            .camera-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .camera-controls button {
+                width: 100%;
+            }
+        }
+
+        .option-section:hover {
+            border-color: #26bc9f;
+            transform: translateY(-2px);
+        }
+
+        .option-section.active {
+            border-color: #26bc9f;
+            background: #f8f9ff;
+        }
+
+        .option-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #1c2f7f 0%, #26bc9f 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #26bc9f 0%, #1c2f7f 100%);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #26bc9f 0%, #1c2f7f 100%);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #1c2f7f 0%, #26bc9f 100%);
+        }
+
+        /* Camera Interface */
+        .camera-interface {
+            display: none;
+        }
+
+        .camera-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            border-radius: 10px;
+            border: 3px solid #26bc9f;
+            background: #000;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        /* Manual Form */
+        .manual-form {
+            text-align: left;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #26bc9f;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .error-message {
+            color: #ff5757;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #26bc9f;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .result-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #ff5757;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            #video {
+                max-width: 100%;
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="static/1hat-logo.png" alt="1hat Logo" style="width: 80px; height: 80px; margin-bottom: 20px; object-fit: contain;">
+            <h1>🏥 Medical Pre-Screening</h1>
+            <p>Welcome! Please choose how you'd like to proceed</p>
+        </div>
+
+        <!-- Face Recognition Option -->
+        <div class="option-section" id="faceRecognitionSection">
+            <div class="option-title">
+                📸 Face Recognition
+            </div>
+            <p style="color: #666; margin-bottom: 15px;">Quick identification using your camera</p>
+            <button class="btn" id="startFaceRecognition">Start Face Recognition</button>
+            
+            <!-- Camera Interface (hidden initially) -->
+            <div class="camera-interface" id="cameraInterface">
+                <div class="camera-container">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="canvas"></canvas>
+                </div>
+                <div>
+                    <button id="capturePhoto" class="btn btn-success" disabled>Capture Photo</button>
+                    <button id="stopCamera" class="btn" disabled>Stop Camera</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Entry Option -->
+        <div class="option-section" id="manualEntrySection">
+            <div class="option-title">
+                ✍️ Manual Entry
+            </div>
+            <p style="color: #666; margin-bottom: 15px;">Enter your details manually</p>
+            
+            <div class="manual-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patientName">Full Name *</label>
+                        <input type="text" id="patientName" required>
+                        <div class="error-message" id="nameError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="patientMobile">Mobile Number *</label>
+                        <input type="tel" id="patientMobile" maxlength="10" required>
+                        <div class="error-message" id="mobileError"></div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patientAge">Age *</label>
+                        <input type="number" id="patientAge" min="1" max="150" required>
+                        <div class="error-message" id="ageError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="patientGender">Gender *</label>
+                        <select id="patientGender" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <div class="error-message" id="genderError"></div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-success" id="submitManualEntry">Register Patient</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+
+        <!-- Result Message -->
+        <div class="result-message" id="resultMessage"></div>
+    </div>
+
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let stream = null;
+
+        // Face Recognition handlers
+        document.getElementById('startFaceRecognition').addEventListener('click', startFaceRecognition);
+        document.getElementById('capturePhoto').addEventListener('click', capturePhoto);
+        document.getElementById('stopCamera').addEventListener('click', stopCamera);
+
+        // Manual Entry handlers
+        document.getElementById('submitManualEntry').addEventListener('click', submitManualEntry);
+
+        async function startFaceRecognition() {
+            const cameraInterface = document.getElementById('cameraInterface');
+            const manualForm = document.querySelector('.manual-form');
+            
+            // Hide manual form and show camera
+            manualForm.style.display = 'none';
+            cameraInterface.style.display = 'block';
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 } 
+                });
+                video.srcObject = stream;
+                
+                document.getElementById('startFaceRecognition').disabled = true;
+                document.getElementById('capturePhoto').disabled = false;
+                document.getElementById('stopCamera').disabled = false;
+            } catch (err) {
+                showError('Error accessing camera: ' + err.message);
+                resetToManualForm();
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            resetToManualForm();
+        }
+
+        function resetToManualForm() {
+            const cameraInterface = document.getElementById('cameraInterface');
+            const manualForm = document.querySelector('.manual-form');
+            
+            cameraInterface.style.display = 'none';
+            manualForm.style.display = 'block';
+            
+            document.getElementById('startFaceRecognition').disabled = false;
+            document.getElementById('capturePhoto').disabled = true;
+            document.getElementById('stopCamera').disabled = true;
+        }
+
+        function capturePhoto() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            
+            stopCamera();
+            
+            canvas.toBlob(function(blob) {
+                processFaceRecognition(blob);
+            }, 'image/jpeg', 0.95);
+        }
+
+        async function processFaceRecognition(imageBlob) {
+            showLoading();
+            
+            try {
+                const formData = new FormData();
+                formData.append('image', imageBlob, 'camera-capture.jpg');
+                
+                const response = await fetch('/api/patients/luxand-face-recognition', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                hideLoading();
+                
+                if (result.success) {
+                    // Store patient data and redirect to second page
+                    sessionStorage.setItem('patientData', JSON.stringify(result.patient_data));
+                    sessionStorage.setItem('consultationData', JSON.stringify(result.consultation_data));
+                    window.location.href = '/patient-details';
+                } else {
+                    showError(result.message);
+                    resetToManualForm();
+                }
+                
+            } catch (error) {
+                hideLoading();
+                showError('Network error: ' + error.message);
+                resetToManualForm();
+            }
+        }
+
+        async function submitManualEntry() {
+            // Validate form
+            if (!validateForm()) {
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const formData = {
+                    name: document.getElementById('patientName').value.trim(),
+                    mobile: document.getElementById('patientMobile').value.trim(),
+                    age: parseInt(document.getElementById('patientAge').value),
+                    gender: document.getElementById('patientGender').value
+                };
+                
+                const response = await fetch('/api/manual-lookup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                hideLoading();
+                
+                if (result.success) {
+                    // Store patient data and redirect to second page
+                    sessionStorage.setItem('patientData', JSON.stringify(result.patient_data));
+                    sessionStorage.setItem('consultationData', JSON.stringify(result.consultation_data));
+                    window.location.href = '/patient-details';
+                } else {
+                    showError(result.message || 'Failed to process patient data');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                showError('Network error: ' + error.message);
+            }
+        }
+
+        function validateForm() {
+            let isValid = true;
+            
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            
+            const name = document.getElementById('patientName').value.trim();
+            const mobile = document.getElementById('patientMobile').value.trim();
+            const age = document.getElementById('patientAge').value;
+            const gender = document.getElementById('patientGender').value;
+            
+            if (!name) {
+                document.getElementById('nameError').textContent = 'Name is required';
+                isValid = false;
+            }
+            
+            if (!mobile || !/^\d{10}$/.test(mobile)) {
+                document.getElementById('mobileError').textContent = 'Mobile number must be exactly 10 digits';
+                isValid = false;
+            }
+            
+            if (!age || age < 1 || age > 150) {
+                document.getElementById('ageError').textContent = 'Age must be between 1 and 150';
+                isValid = false;
+            }
+            
+            if (!gender) {
+                document.getElementById('genderError').textContent = 'Gender is required';
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showError(message) {
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.className = 'result-message result-error';
+            resultMessage.textContent = message;
+            resultMessage.style.display = 'block';
+            
+            setTimeout(() => {
+                resultMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.className = 'result-message result-success';
+            resultMessage.textContent = message;
+            resultMessage.style.display = 'block';
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            stopCamera();
+        });
+    </script>
+</body>
+</html>

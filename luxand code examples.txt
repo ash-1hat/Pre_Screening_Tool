@@ -1,0 +1,153 @@
+Adding a Person to Database - 
+
+#!/usr/bin/env python3
+
+import requests
+import json
+
+API_TOKEN = "e0fdab9cdece4c0c9a8d6992bb215f2f"
+
+# Define a function to the person to the database:
+
+def add_person(name, image_path, collections = ""):
+    if image_path.startswith("https://"):
+        files = {"photos": image_path}
+    else:
+        files = {"photos": open(image_path, "rb")}
+
+    response = requests.post(
+        url="https://api.luxand.cloud/v2/person",
+        headers={"token": API_TOKEN},
+        data={"name": name, "store": "1", "collections": collections},
+        files=files,
+    )
+
+    if response.status_code == 200:
+    	person = response.json()
+
+    	print("Added person", name, "with UUID", person["uuid"])
+    	return person["uuid"]
+    else:
+    	print("Can't add person", name, ":", response.text)
+    	return None
+
+# Now you can add people to the database one by one:
+
+      person_name = "person name"
+
+      # path to image can be local file name or URL
+      path_to_image = "path_to_image"
+      
+      # enter the collection name to create the collection and add person to it
+      collection_name = ""
+      
+      person_uuid = add_person(person_name, path_to_image, collection_name)
+
+      
+# Improving accuracy of recognition
+
+def add_face(person_uuid, image_path):
+    if image_path.startswith("https://"):
+        files = {"photo": image_path}
+    else:
+        files = {"photo": open(image_path, "rb")}
+
+
+    response = requests.post(
+        url="https://api.luxand.cloud/v2/person/%s" % person_uuid,
+        headers={"token": API_TOKEN},
+        data={"store": "1"},
+        files=files
+    )
+    
+     add_face(person_uuid, "path_to_another_image")
+
+
+# Recognizing faces
+
+def recognize_face(image_path):
+    url = "https://api.luxand.cloud/photo/search/v2"
+    headers = {"token": API_TOKEN}
+
+    if image_path.startswith("https://"):
+        files = {"photo": image_path}
+    else:
+        files = {"photo": open(image_path, "rb")}
+
+    response = requests.post(url, headers=headers, files=files)
+    result = json.loads(response.text)
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print("Can't recognize people:", response.text)
+        return None
+
+
+image_path_recognition = "path_to_image_for_recognition"
+recognize_face(image_path_recognition)
+
+
+# Complete Code - 
+
+#!/usr/bin/env python3
+import requests
+import json
+
+API_TOKEN = "e0fdab9cdece4c0c9a8d6992bb215f2f"
+
+# This function adds a person to the database
+def add_person(name, image_path, collections = ""):
+    if image_path.startswith("https://"):
+        files = {"photos": image_path}
+    else:
+        files = {"photos": open(image_path, "rb")}
+
+    response = requests.post(
+        url="https://api.luxand.cloud/v2/person",
+        headers={"token": API_TOKEN},
+        data={"name": name, "store": "1", "collections": collections},
+        files=files,
+    )
+
+    if response.status_code == 200:
+        person = response.json()
+
+        print("Added person", name, "with UUID", person["uuid"])
+        return person["uuid"]
+    else:
+        print("Can't add person", name, ":", response.text)
+        return None
+
+
+# This function recognizes a face in an image
+def recognize_face(image_path):
+    url = "https://api.luxand.cloud/photo/search/v2"
+    headers = {"token": API_TOKEN}
+
+    if image_path.startswith("https://"):
+        files = {"photo": image_path}
+    else:
+        files = {"photo": open(image_path, "rb")}
+
+    response = requests.post(url, headers=headers, files=files)
+    result = json.loads(response.text)
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print("Can't recognize people:", response.text)
+        return None
+
+
+if __name__ == "__main__":
+    # Adding a person
+    person_uuid = add_person("John Smith", "face1.jpg", "Employees")
+    if person_uuid == None:
+        exit(1)
+
+    # Recognizing a face
+    recognized_people = recognize_face("face2.jpg")
+
+    print("Recognized people:", recognized_people)
+

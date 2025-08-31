@@ -1,0 +1,38 @@
+﻿Condition,Sub-Condition,Pre-Consultation (Diagnostics),Post-Consultation (Care)
+Depression / Anxiety,Major Depression,PHQ-9; Thyroid & B12,SSRIs; Psychotherapy; Diet & Nutrition support; Exercise plan
+Depression / Anxiety,Generalized Anxiety,GAD-7 screening,Anxiolytics (if severe); CBT; Relaxation therapy
+Bipolar Disorder,Mania,Clinical assessment; Thyroid/LFT/RFT,Mood stabilizers; Counseling; Family therapy
+Bipolar Disorder,Depression,Mood charting,Antidepressants (cautious use); Therapy
+Schizophrenia,Early Onset,Clinical & psychological eval,Antipsychotics; CBT; Family counseling
+Schizophrenia,Chronic,Brain imaging (if needed),Long-term therapy; Psychoeducation; Rehab
+Substance Use Disorder,Alcohol,LFT; AUDIT,Detox; Anti-craving meds; Counseling; Rehab programs
+Substance Use Disorder,Drugs,DAST screening; Psych eval,Substitution therapy; Counseling; Support groups
+Type 2 Diabetes,Newly Diagnosed,"FBS, PPBS, HbA1c; Lipid profile",Medicines (OHA / Insulin); Diet & Nutrition counseling; Exercise plan
+Type 2 Diabetes,Uncontrolled,HbA1c; Renal Function Test,Adjusted medicines; Close follow-up; Diet & Nutrition support
+Diabetes + Hypertension,–,BP check; ECG,BP medicines; Diet & Nutrition for salt control
+Diabetes + Dyslipidemia,–,Lipid profile,Statins; Dietitian consult
+Complications,Neuropathy,HbA1c; Nerve Conduction Study; Foot exam,Neuropathy meds; Foot care; Physiotherapy
+Complications,Retinopathy,HbA1c; Fundus exam; OCT,Ophthalmology care (laser / injections); Sugar control
+Complications,Nephropathy,Urine microalbumin; RFT,Medicines; Nephrology referral; Diet for renal support
+Diabetes + Obesity,Diabetes + Obesity,HbA1c; Lipid profile; BMI; LFT,Dietitian consult; Weight management plan; Exercise / Physio
+Headache,Migraine,"MRI / CT Brain (if indicated); Blood tests (thyroid, Vit D, B12)","Medicines (analgesics, triptans, preventives); Diet & Nutrition (trigger control); Sleep & stress management"
+Headache,Tension Headache,Clinical evaluation,Medicines (NSAIDs); Relaxation therapy; Physiotherapy (neck/shoulder relaxation)
+Stroke / TIA,Ischemic,CT / MRI Brain; Carotid Doppler; Lipid & coagulation profile,Antiplatelets; Statins; Physiotherapy; Speech therapy; Risk factor control
+Stroke / TIA,Hemorrhagic,CT Brain,BP control; Neuro consult; Rehab therapies
+Epilepsy,Generalized Seizures,EEG; MRI Brain,Antiepileptic drugs; Seizure precaution counseling; Lifestyle guidance
+Epilepsy,Focal Seizures,EEG; MRI Brain,Medicines (AEDs); Counseling; Regular follow-up
+Parkinson’s,Tremor-dominant,Clinical exam; MRI Brain (if needed),Levodopa / other meds; Physiotherapy; Speech therapy
+Parkinson’s,Postural Instability,Clinical exam,Mobility aids; Balance physiotherapy; Diet & Nutrition support
+Knee Pain,Osteoarthritis Knee,X-Ray Knee (AP / Lateral / Standing),"Physiotherapy , NSAIDs;  Hyaluronic Acid injection / PRP injections, Diet & Nutrition"
+Knee Pain,Ligament Injury (ACL / PCL / MCL),MRI Knee; X-Ray (if trauma),Physiotherapy ; Bracing; NSAIDs; Surgery referral if complete tear
+Knee Pain,Meniscus Injury,MRI Knee,"Physiotherapy , Analgesics; Arthroscopy referral if severe"
+Low Back Pain,Disc Herniation,MRI Lumbar Spine,"Medicines, Physiotherapy ; Epidural if required"
+Low Back Pain,Lumbar Spondylosis,X-Ray Lumbar Spine,"Physiotherapy ,Ergonomic guidance"
+Shoulder Pain,Frozen Shoulder,X-Ray Shoulder,"Physiotherapy ,NSAIDs; Local steroid injection"
+Shoulder Pain,Rotator Cuff Tear,MRI Shoulder,"Physiotherapy , PRP / Surgery referral"
+Shoulder Pain,Impingement,X-Ray Shoulder,"Physiotherapy , NSAIDs"
+Neck Pain,Cervical Disc,MRI Cervical Spine,"Medicines; Physiotherapy (traction, strengthening)"
+Neck Pain,Cervical Spondylosis,X-Ray Cervical Spine,"Physiotherapy , Ergonomics"
+Fracture / Trauma,Wrist (Colles),X-Ray Wrist,"POP / Cast,Follow-up X-Rays, Rehab"
+Fracture / Trauma,Ankle / Foot,X-Ray Ankle / Foot,"Cast / Brace, Physiotherapy after removal"
+Fracture / Trauma,Hairline,X-Ray Affected Region,"Immobilisation, Analgesics,Supplements"

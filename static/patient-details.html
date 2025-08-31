@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Medical Pre-Screening - Patient Details</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1c2f7f 0%, #26bc9f 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .status-existing {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-new {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .patient-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #26bc9f;
+        }
+
+        .patient-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .detail-label {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .consultation-card {
+            background: #fff3cd;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #ffc107;
+        }
+
+        .consultation-card h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .consultation-details {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .no-consultation {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+
+        .action-buttons {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #1c2f7f 0%, #26bc9f 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #26bc9f 0%, #1c2f7f 100%);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #26bc9f 0%, #1c2f7f 100%);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #1c2f7f 0%, #26bc9f 100%);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+        }
+
+        .recognition-info {
+            background: #e7f3ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #007bff;
+        }
+
+        .recognition-info h4 {
+            color: #004085;
+            margin-bottom: 10px;
+        }
+
+        .confidence-bar {
+            background: #e9ecef;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.3s ease;
+        }
+
+        .doctor-selection-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #26bc9f;
+        }
+
+        .doctor-selection-card h3 {
+            color: #1c2f7f;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .radio-option {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .radio-option:hover {
+            border-color: #26bc9f;
+            background: #f0f9ff;
+        }
+
+        .radio-option.selected {
+            border-color: #26bc9f;
+            background: #e6f7ff;
+        }
+
+        .radio-option input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+
+        .radio-option label {
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+
+        .radio-description {
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 8px;
+            margin-left: 28px;
+        }
+
+        .doctor-dropdown-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff3cd;
+            border-radius: 10px;
+            border: 1px solid #ffeaa7;
+            display: none;
+        }
+
+        .dropdown-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .dropdown-group {
+            flex: 1;
+        }
+
+        .dropdown-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #1c2f7f;
+        }
+
+        .dropdown-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #26bc9f;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .dropdown-group select:focus {
+            outline: none;
+            border-color: #1c2f7f;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons .btn {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .container {
+            margin: 10px;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .patient-info {
+            padding: 15px;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        .consultation-history {
+            padding: 15px;
+        }
+        
+        .doctor-options {
+            padding: 15px;
+        }
+        
+        .doctor-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .doctor-card {
+            padding: 15px;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            gap: 15px;
+            padding: 15px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+        }
+        
+        .recognition-info {
+            padding: 15px;
+        }
+    }
+    
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="static/1hat-logo.png" alt="1hat Logo" style="width: 80px; height: 80px; margin-bottom: 20px; object-fit: contain;">
+            <h1>👤 Patient Details</h1>
+            <div id="statusBadge" class="status-badge"></div>
+        </div>
+
+        <!-- Patient Information Card -->
+        <div class="patient-card">
+            <h2>📋 Patient Information</h2>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="detail-label">Patient ID</div>
+                    <div class="detail-value" id="patientId">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Full Name</div>
+                    <div class="detail-value" id="patientName">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Mobile Number</div>
+                    <div class="detail-value" id="patientMobile">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Age</div>
+                    <div class="detail-value" id="patientAge">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Gender</div>
+                    <div class="detail-value" id="patientGender">-</div>
+                </div>
+            </div>
+            
+            <!-- Face Recognition Info (if applicable) -->
+            <div id="recognitionInfo" class="recognition-info" style="display: none;">
+                <h4>🎯 Face Recognition Details</h4>
+                <p>Recognition Confidence: <span id="confidencePercent">-</span>%</p>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidenceFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consultation History -->
+        <div id="consultationSection">
+            <!-- Will be populated by JavaScript -->
+        </div>
+
+        <!-- Doctor Selection -->
+        <div id="doctorSelectionSection">
+            <!-- Will be populated by JavaScript -->
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+                <button type="button" class="btn btn-success" onclick="startPreScreening()">
+                    Start Pre-Screening
+                </button>
+                
+                <!-- Selected Doctor Display - Hidden -->
+                <div id="selectedDoctorDisplay" class="selected-doctor-display" style="display: none !important;">
+                    <h4>Selected Doctor:</h4>
+                    <div id="selectedDoctorInfo"></div>
+                </div>
+            <a href="/patient-entry" class="btn btn-secondary">
+                Back to Patient Entry
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Store session data in backend for interview endpoints
+        async function storeSessionData(patientData, consultationData) {
+            try {
+                const sessionId = sessionStorage.getItem('sessionId');
+                if (!sessionId) return;
+                
+                await fetch('/api/store-session-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        patient_info: patientData,
+                        consultation_data: consultationData
+                    })
+                });
+            } catch (error) {
+                console.error('Error storing session data:', error);
+            }
+        }
+
+        // Generate session ID if not exists
+        function generateSessionId() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Load patient data from session storage
+        window.addEventListener('load', async function() {
+            // Get patient and consultation data from URL parameters or session storage
+            const urlParams = new URLSearchParams(window.location.search);
+            const patientData = JSON.parse(sessionStorage.getItem('patientData') || 'null');
+            const consultationData = JSON.parse(sessionStorage.getItem('consultationData') || 'null');
+            
+            // Generate session ID if not exists
+            let sessionId = sessionStorage.getItem('sessionId');
+            if (!sessionId) {
+                sessionId = generateSessionId();
+                sessionStorage.setItem('sessionId', sessionId);
+            }
+            
+            // Store session data in backend for interview endpoints
+            if (patientData) {
+                await storeSessionData(patientData, consultationData);
+            }
+
+            if (!patientData || !patientData.name) {
+                // No patient data found, redirect back
+                alert('No patient data found. Please start from the beginning.');
+                window.location.href = '/patient-entry';
+                return;
+            }
+
+            // Populate patient information
+            document.getElementById('patientId').textContent = patientData.patient_id || 'N/A';
+            document.getElementById('patientName').textContent = patientData.name || 'N/A';
+            document.getElementById('patientMobile').textContent = patientData.mobile || 'N/A';
+            document.getElementById('patientAge').textContent = patientData.age || 'N/A';
+            document.getElementById('patientGender').textContent = patientData.gender || 'N/A';
+
+            // Hide status badge - removed New Patient tag
+            const statusBadge = document.getElementById('statusBadge');
+            if (statusBadge) {
+                statusBadge.style.display = 'none';
+            }
+
+            // Show face recognition info if available
+            if (patientData.recognition_confidence) {
+                const recognitionInfo = document.getElementById('recognitionInfo');
+                const confidencePercent = Math.round(patientData.recognition_confidence * 100);
+                
+                // Debug: Log face recognition service used
+                const recognitionService = patientData.recognition_info?.service || 'unknown';
+                console.log(`🔍 DEBUG: Face recognition performed via ${recognitionService.toUpperCase()} service`);
+                console.log(`🔍 DEBUG: Recognition confidence: ${confidencePercent}%`);
+                
+                document.getElementById('confidencePercent').textContent = confidencePercent;
+                document.getElementById('confidenceFill').style.width = confidencePercent + '%';
+                recognitionInfo.style.display = 'block';
+            }
+
+            // Populate consultation history
+            populateConsultationHistory(consultationData, patientData.has_previous_consultations);
+            
+            // Populate doctor selection
+            populateDoctorSelection(consultationData, patientData.has_previous_consultations);
+        });
+
+        function populateConsultationHistory(consultationData, hasPreviousConsultations) {
+            const consultationSection = document.getElementById('consultationSection');
+
+            if (!hasPreviousConsultations || !consultationData) {
+                consultationSection.innerHTML = `
+                    <div class="no-consultation">
+                        <h3>📋 No Previous Visits</h3>
+                        <p>This is your first visit. We'll start with a comprehensive pre-screening interview.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Format consultation date
+            const consultationDate = new Date(consultationData.consultation_date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Extract diagnosis from raw_pradhi_response
+            let diagnosis = 'N/A';
+            if (consultationData.raw_pradhi_response) {
+                try {
+                    const pradhiData = typeof consultationData.raw_pradhi_response === 'string' 
+                        ? JSON.parse(consultationData.raw_pradhi_response) 
+                        : consultationData.raw_pradhi_response;
+                    
+                    // Navigate to insights.Diagnosis array and get first diagnosis
+                    if (pradhiData.insights && pradhiData.insights.Diagnosis && Array.isArray(pradhiData.insights.Diagnosis)) {
+                        diagnosis = pradhiData.insights.Diagnosis[0] || 'N/A';
+                    }
+                } catch (e) {
+                    console.log('Error parsing raw_pradhi_response:', e);
+                }
+            }
+
+            consultationSection.innerHTML = `
+                <div class="consultation-card">
+                    <h3>🩺 Last Consultation Visit</h3>
+                    <div class="consultation-details">
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <div class="detail-label">Last Visited Date</div>
+                                <div class="detail-value">${consultationDate}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Last Visited Doctor</div>
+                                <div class="detail-value">${consultationData.doctor_name || 'N/A'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Last Visited Diagnosis</div>
+                                <div class="detail-value">${diagnosis}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function populateDoctorSelection(consultationData, hasPreviousConsultations) {
+            const doctorSelectionSection = document.getElementById('doctorSelectionSection');
+            
+            let followUpOption = '';
+            if (hasPreviousConsultations && consultationData && consultationData.doctor_name) {
+                followUpOption = `
+                    <div class="radio-option" onclick="selectDoctorOption('followup')">
+                        <label>
+                            <input type="radio" name="doctorChoice" value="followup" id="followupOption">
+                            Follow-up with Dr. ${consultationData.doctor_name}
+                        </label>
+                        <div class="radio-description">Continue treatment with your previous doctor</div>
+                    </div>
+                `;
+            }
+
+            doctorSelectionSection.innerHTML = `
+                <div class="doctor-selection-card">
+                    <h3>👨‍⚕️ Doctor Selection</h3>
+                    <p style="color: #6c757d; margin-bottom: 20px;">How would you like to proceed with your consultation?</p>
+                    
+                    ${followUpOption}
+                    
+                    <div class="radio-option" onclick="selectDoctorOption('new')">
+                        <label>
+                            <input type="radio" name="doctorChoice" value="new" id="newDoctorOption">
+                            Visit a new doctor
+                        </label>
+                        <div class="radio-description">Choose from available doctors by department</div>
+                    </div>
+                    
+                    <!-- Department and Doctor Dropdown -->
+                    <div class="doctor-dropdown-section" id="doctorDropdownSection">
+                        <h4 style="color: #856404; margin-bottom: 15px;">Select Department and Doctor</h4>
+                        <div class="dropdown-row">
+                            <div class="dropdown-group">
+                                <label for="departmentSelect">Department</label>
+                                <select id="departmentSelect" onchange="loadDoctorsByDepartment()">
+                                    <option value="">Select Department</option>
+                                </select>
+                            </div>
+                            <div class="dropdown-group">
+                                <label for="doctorSelect">Doctor</label>
+                                <select id="doctorSelect" disabled>
+                                    <option value="">Select Doctor</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="radio-option" onclick="selectDoctorOption('help')">
+                        <label>
+                            <input type="radio" name="doctorChoice" value="help" id="helpChooseOption">
+                            Help me choose a doctor
+                        </label>
+                        <div class="radio-description">Get AI-powered doctor recommendation based on your symptoms</div>
+                    </div>
+                </div>
+            `;
+            
+            // Load departments when page loads
+            loadDepartments();
+        }
+
+        function selectDoctorOption(option) {
+            // Clear all selections
+            document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelectorAll('input[name="doctorChoice"]').forEach(radio => radio.checked = false);
+            
+            // Select the clicked option
+            const selectedOption = document.querySelector(`input[value="${option}"]`);
+            if (selectedOption) {
+                selectedOption.checked = true;
+                selectedOption.closest('.radio-option').classList.add('selected');
+            }
+            
+            // Show/hide dropdown section
+            const dropdownSection = document.getElementById('doctorDropdownSection');
+            if (option === 'new') {
+                dropdownSection.style.display = 'block';
+            } else {
+                dropdownSection.style.display = 'none';
+                // Store the selection for non-dropdown options
+                if (option === 'followup') {
+                    const consultationData = JSON.parse(sessionStorage.getItem('consultationData') || 'null');
+                    sessionStorage.setItem('selectedDoctorChoice', JSON.stringify({
+                        type: 'followup',
+                        doctor_id: consultationData?.doctor_onehat_id || consultationData?.doctor_uuid,
+                        doctor_name: consultationData?.doctor_name,
+                        doctor_specialty: consultationData?.doctor_specialty
+                    }));
+                } else if (option === 'help') {
+                    sessionStorage.setItem('selectedDoctorChoice', JSON.stringify({
+                        type: 'help'
+                    }));
+                }
+                
+                // Update display
+                updateSelectedDoctorDisplay();
+            }
+        }
+
+        async function loadDepartments() {
+            try {
+                const response = await fetch('/api/departments');
+                const data = await response.json();
+                
+                const departmentSelect = document.getElementById('departmentSelect');
+                departmentSelect.innerHTML = '<option value="">Select Department</option>';
+                
+                // data.departments is an array of department names
+                data.departments.forEach(deptName => {
+                    const option = document.createElement('option');
+                    option.value = deptName;
+                    option.textContent = deptName;
+                    departmentSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading departments:', error);
+            }
+        }
+
+        async function loadDoctorsByDepartment() {
+            const departmentSelect = document.getElementById('departmentSelect');
+            const doctorSelect = document.getElementById('doctorSelect');
+            const selectedDepartment = departmentSelect.value;
+            
+            if (!selectedDepartment) {
+                doctorSelect.innerHTML = '<option value="">Select Doctor</option>';
+                doctorSelect.disabled = true;
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/departments/${encodeURIComponent(selectedDepartment)}/doctors`);
+                const data = await response.json();
+                
+                doctorSelect.innerHTML = '<option value="">Select Doctor</option>';
+                
+                // data.doctors is an array of doctor names
+                data.doctors.forEach(doctorName => {
+                    const option = document.createElement('option');
+                    option.value = doctorName;
+                    option.textContent = doctorName;
+                    doctorSelect.appendChild(option);
+                });
+                
+                doctorSelect.disabled = false;
+                
+                // Add change listener to doctor select
+                doctorSelect.onchange = async function() {
+                    if (this.value) {
+                        // Get doctor ID from CSV data
+                        let doctorId = null;
+                        try {
+                            const csvResponse = await fetch('/api/get-doctor-id/' + encodeURIComponent(this.value));
+                            const csvData = await csvResponse.json();
+                            doctorId = csvData.onehat_doctor_id;
+                        } catch (e) {
+                            console.log('Could not get doctor ID:', e);
+                        }
+                        
+                        sessionStorage.setItem('selectedDoctorChoice', JSON.stringify({
+                            type: 'new',
+                            doctor_id: doctorId,
+                            doctor_name: this.value,
+                            doctor_specialty: selectedDepartment,
+                            department_name: selectedDepartment
+                        }));
+                        
+                        // Update display
+                        updateSelectedDoctorDisplay();
+                    }
+                };
+                
+            } catch (error) {
+                console.error('Error loading doctors:', error);
+                doctorSelect.innerHTML = '<option value="">Error loading doctors</option>';
+            }
+        }
+
+        function updateSelectedDoctorDisplay() {
+            const selectedDoctorChoice = JSON.parse(sessionStorage.getItem('selectedDoctorChoice') || '{}');
+            const displayDiv = document.getElementById('selectedDoctorDisplay');
+            const contentDiv = document.getElementById('doctorDisplayContent');
+            
+            if (selectedDoctorChoice.type) {
+                let displayText = '';
+                
+                switch(selectedDoctorChoice.type) {
+                    case 'followup':
+                        displayText = `
+                            <strong>Follow-up with:</strong> Dr. ${selectedDoctorChoice.doctor_name}<br>
+                            <strong>Doctor ID:</strong> ${selectedDoctorChoice.doctor_id}<br>
+                            <strong>Specialty:</strong> ${selectedDoctorChoice.doctor_specialty}
+                        `;
+                        break;
+                    case 'new':
+                        displayText = `
+                            <strong>New Doctor:</strong> Dr. ${selectedDoctorChoice.doctor_name}<br>
+                            <strong>Doctor ID:</strong> ${selectedDoctorChoice.doctor_id}<br>
+                            <strong>Department:</strong> ${selectedDoctorChoice.department_name}
+                        `;
+                        break;
+                    case 'help':
+                        displayText = `<strong>AI will help choose the best doctor for you</strong>`;
+                        break;
+                    default:
+                        displayText = `<strong>No doctor selected yet</strong>`;
+                }
+                
+                contentDiv.innerHTML = displayText;
+                displayDiv.style.display = 'block';
+            } else {
+                displayDiv.style.display = 'none';
+            }
+        }
+
+        function startPreScreening() {
+            // Get selected doctor choice from session storage
+            const selectedDoctorChoice = JSON.parse(sessionStorage.getItem('selectedDoctorChoice') || '{}');
+            
+            // Update display first
+            updateSelectedDoctorDisplay();
+            
+            // Log to terminal via API call
+            fetch('/api/log-doctor-selection', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: 'Pre-diagnostics button pressed',
+                    doctor_name: selectedDoctorChoice.doctor_name || null,
+                    doctor_id: selectedDoctorChoice.doctor_id || null,
+                    selection_type: selectedDoctorChoice.type || 'none',
+                    session_id: sessionStorage.getItem('sessionId')
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Doctor selection logged:', data);
+                // Navigate to interview page based on selection type
+                const selectedDoctorChoice = JSON.parse(sessionStorage.getItem('selectedDoctorChoice') || '{}');
+                
+                // Store selection type for interview page to determine which service to use
+                sessionStorage.setItem('interviewType', selectedDoctorChoice.type || 'help');
+                
+                // Navigate to interview page
+                window.location.href = '/interview';
+            })
+            .catch(error => {
+                console.error('Error logging doctor selection:', error);
+                // Continue anyway since logging is not critical
+                const selectedDoctorChoice = JSON.parse(sessionStorage.getItem('selectedDoctorChoice') || '{}');
+                sessionStorage.setItem('interviewType', selectedDoctorChoice.type || 'help');
+                window.location.href = '/interview';
+            });
+        }
+
+        // Clear session data when leaving the page (except when going to interview)
+        window.addEventListener('beforeunload', function(e) {
+            if (!window.location.href.includes('/interview')) {
+                // Only clear if not going to interview
+                setTimeout(() => {
+                    if (!window.location.href.includes('/interview')) {
+                        sessionStorage.removeItem('patientData');
+                        sessionStorage.removeItem('consultationData');
+                    }
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>

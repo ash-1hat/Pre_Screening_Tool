@@ -1,0 +1,440 @@
+<!-- 
+LEGACY FILE - REMOVED
+Face recognition functionality has been integrated into patient-entry.html
+This standalone page is no longer used in the current system flow.
+-->
+            font-weight: bold;
+            color: #555;
+        }
+
+        .detail-value {
+            color: #333;
+        }
+
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .confidence-info {
+            margin: 10px 0;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn">← Back to Home</a>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Patient Face Recognition</h1>
+            <p>Camera will start automatically. Click "Capture Photo" when ready for identification</p>
+        </div>
+
+        <!-- Camera Section -->
+        <div class="camera-section">
+            <h3>📷 Take Photo with Camera</h3>
+            <div class="camera-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+            </div>
+            <div class="controls">
+                <button id="startCamera" class="btn">Start Camera</button>
+                <button id="capturePhoto" class="btn btn-success" disabled>Capture Photo</button>
+                <button id="stopCamera" class="btn btn-danger" disabled>Stop Camera</button>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <h3>📁 Or Upload Image File</h3>
+            <div class="file-input">
+                <label for="imageUpload" class="file-label">Choose Image File</label>
+                <input type="file" id="imageUpload" accept="image/*">
+            </div>
+            <p style="color: #666; font-size: 0.9em;">Supported formats: JPG, PNG, GIF (Max 5MB)</p>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Recognizing patient...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div class="result-section" id="resultSection">
+            <div id="resultMessage"></div>
+            <div class="patient-details" id="patientDetails" style="display: none;">
+                <h3>👤 Patient Details</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Patient ID:</span>
+                    <span class="detail-value" id="patientId">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Name:</span>
+                    <span class="detail-value" id="patientName">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Mobile:</span>
+                    <span class="detail-value" id="patientMobile">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Age:</span>
+                    <span class="detail-value" id="patientAge">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Gender:</span>
+                    <span class="detail-value" id="patientGender">-</span>
+                </div>
+                <div class="confidence-info" id="confidenceInfo"></div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-success" onclick="proceedWithPatient()">
+                        Proceed with Pre-Screening
+                    </button>
+                    <button class="btn" onclick="resetRecognition()">
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let stream = null;
+
+        // Auto-start camera when page loads
+        window.addEventListener('load', function() {
+            startCamera();
+        });
+
+        // Camera controls
+        document.getElementById('startCamera').addEventListener('click', startCamera);
+        document.getElementById('capturePhoto').addEventListener('click', capturePhoto);
+        document.getElementById('stopCamera').addEventListener('click', stopCamera);
+        document.getElementById('imageUpload').addEventListener('change', handleFileUpload);
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 } 
+                });
+                video.srcObject = stream;
+                
+                document.getElementById('startCamera').disabled = true;
+                document.getElementById('capturePhoto').disabled = false;
+                document.getElementById('stopCamera').disabled = false;
+            } catch (err) {
+                showAlert('Error accessing camera: ' + err.message + '. Please allow camera permission and refresh the page.');
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                stream = null;
+            }
+            
+            document.getElementById('startCamera').disabled = false;
+            document.getElementById('capturePhoto').disabled = true;
+            document.getElementById('stopCamera').disabled = true;
+        }
+
+        function capturePhoto() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            
+            // Auto-stop camera after capturing
+            stopCamera();
+            
+            canvas.toBlob(function(blob) {
+                recognizePatient(blob, 'camera-capture.jpg');
+            }, 'image/jpeg', 0.95);
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    showAlert('File size too large. Please choose an image under 5MB.');
+                    return;
+                }
+                recognizePatient(file, file.name);
+            }
+        }
+
+        function showAlert(message) {
+            // Create a mobile-friendly alert
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #ff6b6b;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 1000;
+                font-size: 14px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                max-width: 90%;
+                text-align: center;
+            `;
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                document.body.removeChild(alertDiv);
+            }, 3000);
+        }
+
+        async function recognizePatient(imageBlob, filename) {
+            const loading = document.getElementById('loading');
+            const resultSection = document.getElementById('resultSection');
+            
+            // Show loading
+            loading.style.display = 'block';
+            resultSection.style.display = 'none';
+            
+            try {
+                const formData = new FormData();
+                formData.append('image', imageBlob, filename);
+                
+                const response = await fetch('/api/face-recognition/recognize-patient', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                // Hide loading
+                loading.style.display = 'none';
+                
+                if (result.success) {
+                    showSuccessResult(result);
+                } else {
+                    showErrorResult(result.message);
+                }
+                
+            } catch (error) {
+                loading.style.display = 'none';
+                showErrorResult('Network error: ' + error.message);
+            }
+        }
+
+    function capturePhoto() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+        
+        // Auto-stop camera after capturing
+        stopCamera();
+        
+        canvas.toBlob(function(blob) {
+            recognizePatient(blob, 'camera-capture.jpg');
+        }, 'image/jpeg', 0.95);
+    }
+
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('File size too large. Please choose an image under 5MB.');
+                return;
+            }
+            recognizePatient(file, file.name);
+        }
+    }
+
+    function showAlert(message) {
+        // Create a mobile-friendly alert
+        const alertDiv = document.createElement('div');
+        alertDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff6b6b;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            max-width: 90%;
+            text-align: center;
+        `;
+        alertDiv.textContent = message;
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            document.body.removeChild(alertDiv);
+        }, 3000);
+    }
+
+    async function recognizePatient(imageBlob, filename) {
+        const loading = document.getElementById('loading');
+        const resultSection = document.getElementById('resultSection');
+        
+        // Show loading
+        loading.style.display = 'block';
+        resultSection.style.display = 'none';
+        
+        try {
+            const formData = new FormData();
+            formData.append('image', imageBlob, filename);
+            
+            const response = await fetch('/api/face-recognition/recognize-patient', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            // Hide loading
+            loading.style.display = 'none';
+            
+            if (result.success) {
+                showSuccessResult(result);
+            } else {
+                showErrorResult(result.message);
+            }
+            
+        } catch (error) {
+            loading.style.display = 'none';
+            showErrorResult('Network error: ' + error.message);
+        }
+    }
+
+    // Store patient data globally for proceedWithPatient function
+    let recognizedPatientData = null;
+
+    function showSuccessResult(result) {
+        const resultSection = document.getElementById('resultSection');
+        
+        // Store patient data globally
+        recognizedPatientData = result.patient;
+        
+        // Show success message and patient details in one go
+        resultSection.className = 'result-section result-success';
+        resultSection.innerHTML = `
+            <h3>✅ Patient Recognized Successfully!</h3>
+            <p><strong>Confidence:</strong> ${(result.recognition_info.confidence * 100).toFixed(1)}%</p>
+            ${result.has_previous_consultations ? '<p><strong>Previous consultations found</strong> - Medical history available</p>' : '<p><strong>First-time patient</strong> - No previous consultations</p>'}
+            
+            <div class="patient-details" style="display: block;">
+                <h3>👤 Patient Details</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Patient ID:</span>
+                    <span class="detail-value">${result.patient.patient_id}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Name:</span>
+                    <span class="detail-value">${result.patient.name}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Mobile:</span>
+                    <span class="detail-value">${result.patient.mobile}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Age:</span>
+                    <span class="detail-value">${result.patient.age}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Gender:</span>
+                    <span class="detail-value">${result.patient.gender}</span>
+                </div>
+                <div class="confidence-info">
+                    <strong>Recognition Confidence:</strong> ${(result.recognition_info.confidence * 100).toFixed(1)}%
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-success" onclick="proceedWithPatient()">
+                        Proceed with Pre-Screening
+                    </button>
+                    <button class="btn" onclick="resetRecognition()">
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        resultSection.style.display = 'block';
+    }
+
+    function showErrorResult(message) {
+        const resultSection = document.getElementById('resultSection');
+        resultSection.className = 'result-section result-error';
+        resultSection.innerHTML = `
+            <h3>❌ Recognition Failed</h3>
+            <p>${message}</p>
+            <p>Please try again or <a href="/">enter your details manually</a></p>
+            <div style="margin-top: 15px;">
+                <button class="btn" onclick="resetRecognition()">Try Again</button>
+                <a href="/" class="btn" style="text-decoration: none; margin-left: 10px;">Manual Entry</a>
+            </div>
+        `;
+        resultSection.style.display = 'block';
+    }
+
+    function resetRecognition() {
+        document.getElementById('resultSection').style.display = 'none';
+        document.getElementById('imageUpload').value = '';
+        stopCamera();
+    }
+
+    function proceedWithPatient() {
+        if (!recognizedPatientData) {
+            alert('Patient data not available. Please try recognition again.');
+            return;
+        }
+        
+        // Store patient data in sessionStorage for the main application
+        sessionStorage.setItem('recognizedPatient', JSON.stringify(recognizedPatientData));
+        
+        // Redirect to main pre-screening form
+        window.location.href = '/?recognized=true';
+    }
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        stopCamera();
+    });
+    </script>
+</body>
+</html>

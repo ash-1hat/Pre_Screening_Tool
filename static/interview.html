@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Medical Pre-Screening - Interview</title>
+    <link rel="stylesheet" href="static/css/main.css">
+    <link rel="stylesheet" href="static/css/interview.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="static/1hat-logo.png" alt="1hat Logo" class="logo-image">
+                    <h1>Assessment</h1>
+                </div>
+                <div class="step-indicator">
+                    <span class="step active">Step 2 of 2</span>
+                    <p>Medical Assessment & Questioning</p>
+                </div>
+                <div class="patient-info" id="patient-info">
+                    <!-- Patient info will be populated by JavaScript -->
+                </div>
+            </div>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="progress-info">
+                <span id="progress-text">Question 0 of 6</span>
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <main class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <!-- Welcome message -->
+                <div class="message system">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            Hello! I'm your AI Medical Assistant. I'll ask you a few questions to better understand your health concerns and provide an initial assessment.
+                        </div>
+                        <div class="message-time" id="welcome-time"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="chat-input-area" id="chat-input-area">
+                <div class="input-container">
+                    <textarea 
+                        id="patient-answer" 
+                        placeholder="Type your answer here..." 
+                        rows="3" 
+                        disabled
+                    ></textarea>
+                    <button id="send-answer" class="send-button" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-actions">
+                    <button id="dont-know-btn" class="dont-know-button" disabled>
+                        <i class="fas fa-question"></i>
+                        I don't know
+                    </button>
+                </div>
+            </div>
+
+            <!-- Assessing Loading Section -->
+            <div id="assessing-loading" class="assessing-loading hidden">
+                <div class="loading-message">
+                    <div class="spinner"></div>
+                    <h3>Assessing...</h3>
+                    <p>Analyzing your responses to provide personalized recommendations</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Assessment Results Section -->
+        <div id="assessment-section" class="assessment-section hidden">
+            <div class="assessment-header">
+            </div>
+            
+            <div class="assessment-content">
+                <!-- Interview Summary and Medical Assessment sections removed -->
+
+                <div class="assessment-card">
+                    <div class="recommendation-content">
+                        <div class="confidence-level" id="confidence-level">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                        <div class="recommended-action" id="recommended-action">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                        <div class="doctor-recommendations" id="doctor-recommendations">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                        <div class="doctor-analysis" id="doctor-analysis">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                        <div class="pre-consultation-diagnostics" id="pre-consultation-diagnostics">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="assessment-actions">
+                <div class="button-group">
+                    <button id="accept-prescreening-btn" class="btn-accept">
+                        <i class="fas fa-check-circle"></i>
+                        Done
+                    </button>
+                    <button id="start-new-btn" class="btn-primary">
+                        <i class="fas fa-refresh"></i>
+                        Start Again
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- JSON Modal -->
+        <div id="json-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Technical Assessment Details</h3>
+                    <button class="modal-close" id="close-json-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <pre id="json-output"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p id="loading-text">Starting medical interview...</p>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation-bar">
+            <button id="back-to-form" class="nav-button">
+                <i class="fas fa-arrow-left"></i>
+                Back to Patient Form
+            </button>
+            <button id="restart-interview" class="nav-button" disabled>
+                <i class="fas fa-refresh"></i>
+                Restart Interview
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="static/js/api.js"></script>
+    <script src="static/js/voice-recorder.js"></script>
+    <script src="static/js/interview.js"></script>
+</body>
+</html>
