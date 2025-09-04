@@ -39,6 +39,9 @@ class QuestionRequest(BaseModel):
     session_id: str
     patient_id: str
 
+class FollowupAssessmentRequest(BaseModel):
+    session_id: str
+
 class QuestionResponse(BaseModel):
     success: bool
     question: Optional[str] = None

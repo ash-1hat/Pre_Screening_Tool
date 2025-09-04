@@ -427,8 +427,7 @@ class MedicalInterviewHandler {
                 response = await api.makeRequest('/followup/generate-assessment', {
                     method: 'POST',
                     body: JSON.stringify({
-                        session_id: api.sessionId,
-                        patient_id: patientId
+                        session_id: api.sessionId
                     })
                 });
                 

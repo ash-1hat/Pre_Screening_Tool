@@ -10,8 +10,8 @@ from datetime import datetime
 from typing import Dict, List
 
 from models.medical import (
-    QuestionRequest, QuestionResponse, AnswerSubmission, 
-    AnswerResponse, InterviewSession, QuestionAnswer, InterviewStatus
+    QuestionRequest, QuestionResponse, AnswerSubmission, AnswerResponse, FollowupAssessmentRequest, 
+    InterviewSession, QuestionAnswer, InterviewStatus
 )
 from services.followup_service import followup_service
 from services.session_service import sessions, get_session, update_session
@@ -428,7 +428,7 @@ async def get_followup_interview_status(session_id: str):
     }
 
 @router.post("/followup/generate-assessment")
-async def generate_followup_assessment(request: QuestionRequest):
+async def generate_followup_assessment(request: FollowupAssessmentRequest):
     """Generate follow-up assessment based on completed interview"""
     
     try:
@@ -457,6 +457,12 @@ async def generate_followup_assessment(request: QuestionRequest):
         if not patient_info:
             logger.error(f"❌ [FOLLOWUP] Patient information not found")
             raise HTTPException(status_code=400, detail="Patient information not found")
+        
+        # Extract patient ID from session data
+        patient_id = patient_info.get("patient_id") or patient_info.get("id")
+        if not patient_id:
+            logger.error(f"❌ [FOLLOWUP] Patient ID not found in session data")
+            raise HTTPException(status_code=400, detail="Patient ID not found in session data")
         
         # Build interview responses
         interview_responses = "\n".join([

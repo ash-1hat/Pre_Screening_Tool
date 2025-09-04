@@ -63,6 +63,11 @@ const utils = {
         }
     },
 
+    // Navigate back to patient entry form
+    goToPatientForm() {
+        window.location.href = '/static/patient-entry.html';
+    },
+
     // Show loading spinner
     showLoading(message = 'Loading...') {
         const loadingDiv = document.createElement('div');
