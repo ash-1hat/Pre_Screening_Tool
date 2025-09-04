@@ -3,8 +3,7 @@ Test script to test Gemini API integration
 """
 
 import os
-import asyncio
-import genai
+from google import genai
 from google.genai import types
 from core.config import settings
 

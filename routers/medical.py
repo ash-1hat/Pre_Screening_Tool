@@ -13,6 +13,7 @@ from models.medical import (
 )
 from services.medical_expert_service import MedicalExpertService
 from services.session_service import sessions, get_session
+from services.tts_service import tts_service
 import logging
 
 logger = logging.getLogger(__name__)
@@ -381,3 +382,192 @@ async def debug_routes():
 async def test_voice_endpoint():
     """Simple test endpoint to verify POST method registration"""
     return {"success": True, "message": "POST method working"}
+
+# TTS Health Check Endpoint
+@router.get("/medical/tts-health")
+async def check_tts_health():
+    """Check if ElevenLabs TTS service is available"""
+    try:
+        is_healthy = await tts_service.health_check()
+        return {
+            "success": True,
+            "tts_available": is_healthy,
+            "service": "ElevenLabs",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"TTS health check error: {e}")
+        return {
+            "success": False,
+            "tts_available": False,
+            "error": str(e),
+            "service": "ElevenLabs"
+        }
+
+# Text-to-Speech Conversion Endpoint - Commented out for now
+# @router.post("/medical/text-to-speech")
+# async def convert_text_to_speech(request: dict):
+#     """
+#     Convert text to speech using ElevenLabs API
+#     
+#     Expected request format:
+#     {
+#         "text": "Text to convert to speech",
+#         "voice_id": "optional_voice_id",
+#         "language": "en|ta",
+#         "streaming": false,
+#         "voice_settings": {
+#             "stability": 0.5,
+#             "similarity_boost": 0.75
+#         }
+#     }
+#     """
+#     try:
+#         text = request.get("text", "").strip()
+#         if not text:
+#             raise HTTPException(status_code=400, detail="Text is required")
+#         
+#         # Get voice configuration
+#         language = request.get("language", "en")
+#         voice_id = request.get("voice_id") or tts_service.get_voice_for_language(language)
+#         voice_settings = request.get("voice_settings")
+#         streaming = request.get("streaming", False)
+#         
+#         # Convert text to speech
+#         if streaming:
+#             result = await tts_service.text_to_speech_stream(
+#                 text=text,
+#                 voice_id=voice_id,
+#                 voice_settings=voice_settings
+#             )
+#         else:
+#             result = await tts_service.text_to_speech(
+#                 text=text,
+#                 voice_id=voice_id,
+#                 voice_settings=voice_settings
+#             )
+#         
+#         if result["success"]:
+#             return {
+#                 "success": True,
+#                 "audio_base64": result["audio_base64"],
+#                 "audio_format": result["audio_format"],
+#                 "voice_id": result["voice_id"],
+#                 "model_id": result["model_id"],
+#                 "text_length": result["text_length"],
+#                 "audio_size": result["audio_size"],
+#                 "streaming": result.get("streaming", False),
+#                 "timestamp": result["timestamp"]
+#             }
+#         else:
+#             raise HTTPException(
+#                 status_code=500, 
+#                 detail=f"TTS conversion failed: {result.get('message', 'Unknown error')}"
+#             )
+#             
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         logger.error(f"TTS conversion error: {e}")
+#         raise HTTPException(status_code=500, detail=f"TTS conversion failed: {str(e)}")
+
+# Simple Text-to-Speech Endpoint
+@router.post("/medical/question-tts")
+async def convert_text_to_speech(request: dict):
+    """
+    Simple text-to-speech conversion
+    
+    Expected request format:
+    {
+        "text": "Text to convert to speech",
+        "language": "en|ta"
+    }
+    """
+    try:
+        text = request.get("text", "").strip()
+        language = request.get("language", "en")
+        
+        if not text:
+            raise HTTPException(status_code=400, detail="Text is required")
+        
+        # Use Tamil voice for better performance with Tamil text
+        voice_id = tts_service.get_voice_for_language("ta")
+        
+        # Optimized voice settings for medical content
+        voice_settings = {
+            "stability": 0.0,
+            "similarity_boost": 0.75,
+            "style": 0.0,
+            "use_speaker_boost": False
+        }
+        
+        # Convert text to speech with timing
+        import time
+        start_time = time.time()
+        logger.info(f"[TTS_TIMING] Starting ElevenLabs API request at {start_time}")
+        
+        result = await tts_service.text_to_speech(
+            text=text,
+            voice_id=voice_id,
+            voice_settings=voice_settings
+        )
+        
+        end_time = time.time()
+        api_duration = end_time - start_time
+        logger.info(f"[TTS_TIMING] ElevenLabs API response received in {api_duration:.3f} seconds")
+        
+        if result["success"]:
+            audio_size_kb = len(result["audio_base64"]) * 3 / 4 / 1024  # Approximate size in KB
+            logger.info(f"[TTS_TIMING] Audio generated: {audio_size_kb:.1f}KB, text length: {len(text)} chars")
+            
+            return {
+                "success": True,
+                "audio_base64": result["audio_base64"],
+                "audio_format": result["audio_format"],
+                "voice_id": result["voice_id"],
+                "language": language,
+                "timestamp": result["timestamp"],
+                "api_duration": api_duration,
+                "audio_size_kb": audio_size_kb
+            }
+        else:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"TTS conversion failed: {result.get('message', 'Unknown error')}"
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"TTS conversion error: {e}")
+        raise HTTPException(status_code=500, detail=f"TTS conversion failed: {str(e)}")
+
+# Get Available Voices Endpoint - Commented out for now
+# @router.get("/medical/tts-voices")
+# async def get_available_voices():
+#     """Get list of available ElevenLabs voices"""
+#     try:
+#         result = await tts_service.get_available_voices()
+#         
+#         if result["success"]:
+#             return {
+#                 "success": True,
+#                 "voices": result["voices"],
+#                 "total_voices": result["total_voices"],
+#                 "configured_voices": {
+#                     "tamil": tts_service.voice_id_tamil,
+#                     "english": tts_service.voice_id_english
+#                 },
+#                 "timestamp": result["timestamp"]
+#             }
+#         else:
+#             raise HTTPException(
+#                 status_code=500, 
+#                 detail=f"Failed to retrieve voices: {result.get('message', 'Unknown error')}"
+#             )
+#             
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         logger.error(f"Get voices error: {e}")
+#         raise HTTPException(status_code=500, detail=f"Failed to retrieve voices: {str(e)}")

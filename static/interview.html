@@ -27,6 +27,14 @@
             </div>
         </header>
 
+        <!-- Audio Control -->
+        <div class="audio-control-container">
+            <button id="toggle-audio" class="audio-toggle-btn">
+                <i class="fas fa-volume-up"></i>
+                Disable Audio Questions
+            </button>
+        </div>
+
         <!-- Progress Bar -->
         <div class="progress-container">
             <div class="progress-bar">
@@ -68,9 +76,9 @@
                     </button>
                 </div>
                 <div class="input-actions">
-                    <button id="dont-know-btn" class="dont-know-button" disabled>
-                        <i class="fas fa-question"></i>
-                        I don't know
+                    <button id="toggle-audio-2" class="audio-toggle-btn-2">
+                        <i class="fas fa-volume-up"></i>
+                        Disable Audio Questions
                     </button>
                 </div>
             </div>
@@ -158,15 +166,18 @@
                 Back to Patient Form
             </button>
             <button id="restart-interview" class="nav-button" disabled>
-                <i class="fas fa-refresh"></i>
+                {{ ... }}
                 Restart Interview
             </button>
         </div>
     </div>
 
     <!-- Scripts -->
-    <script src="static/js/api.js"></script>
-    <script src="static/js/voice-recorder.js"></script>
-    <script src="static/js/interview.js"></script>
+    <script src="static/js/api.js?v=1"></script>
+    <!-- Simple TTS Integration -->
+    <script src="static/js/simple-tts.js"></script>
+    <!-- Interview Script -->
+    <script src="static/js/interview.js?v=3"></script>
+    <script src="static/js/simple-voice.js?v=1"></script>
 </body>
 </html>

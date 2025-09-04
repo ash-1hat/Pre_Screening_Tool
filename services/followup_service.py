@@ -4,7 +4,7 @@ Follow-up Service - Handles follow-up interviews and assessments for returning p
 
 import os
 import warnings
-import genai
+from google import genai
 from google.genai import types
 from typing import Dict, List, Optional
 from datetime import datetime
@@ -127,11 +127,38 @@ class FollowupService:
                     if "INTERVIEW_COMPLETE" in generated_question:
                         return "INTERVIEW_COMPLETE"
                         
-                    return generated_question or fallback_questions[min(question_number - 1, len(fallback_questions) - 1)]
+                    # Check for repetition by looking at conversation history
+                    if conversation_history and generated_question:
+                        # Extract previous questions to avoid repetition
+                        previous_questions = []
+                        for line in conversation_history.split('\n'):
+                            if line.startswith('Q'):
+                                prev_q = line.split(': ', 1)[1] if ': ' in line else ""
+                                previous_questions.append(prev_q.lower().strip())
+                        
+                        # If this question is too similar to previous ones, generate alternative
+                        current_q_lower = generated_question.lower().strip()
+                        for prev_q in previous_questions:
+                            if (prev_q and len(prev_q) > 10 and 
+                                (current_q_lower in prev_q or prev_q in current_q_lower or
+                                 any(word in current_q_lower and word in prev_q 
+                                     for word in ['feeling', 'medication', 'symptom'] if len(word) > 5))):
+                                print(f"[FOLLOWUP_DEBUG] Question repetition detected, using fallback")
+                                return self._generate_alternative_question(question_number, conversation_history)
+                    
+                    return generated_question or "Can you tell me more about your current condition?"
                     
                 except json.JSONDecodeError as e:
-                    print(f"[FOLLOWUP_DEBUG] JSON parse error: {e}, using fallback")
-                    return fallback_questions[min(question_number - 1, len(fallback_questions) - 1)]
+                    print(f"[FOLLOWUP_DEBUG] JSON parse error: {e}, raw response: {response.text[:200]}")
+                    # Try to extract question from markdown or plain text
+                    import re
+                    question_match = re.search(r'"question":\s*"([^"]+)"', response.text)
+                    if question_match:
+                        return question_match.group(1)
+                    
+                    # Use response as question if it seems reasonable
+                    if response.text and len(response.text.strip()) < 200:
+                        return response.text.strip()
             
             # Use fallback if no response
             print(f"[FOLLOWUP_DEBUG] No response from Gemini API, using fallback")

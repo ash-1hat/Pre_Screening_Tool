@@ -14,6 +14,7 @@ class MedicalInterviewHandler {
         this.answerTextarea = document.getElementById('patient-answer');
         this.sendButton = document.getElementById('send-answer');
         this.dontKnowButton = document.getElementById('dont-know-btn');
+        this.audioToggleBtn2 = document.getElementById('toggle-audio-2');
         this.assessingLoading = document.getElementById('assessing-loading');
         this.assessmentSection = document.getElementById('assessment-section');
         
@@ -76,8 +77,16 @@ class MedicalInterviewHandler {
         // Auto-resize textarea
         this.answerTextarea.addEventListener('input', () => this.autoResizeTextarea());
 
-        // Don't know button
-        this.dontKnowButton.addEventListener('click', () => this.submitDontKnow());
+        // Second audio toggle button (below textbox)
+        if (this.audioToggleBtn2) {
+            this.audioToggleBtn2.addEventListener('click', () => {
+                // Use the same toggle function as the main audio button
+                if (window.simpleTTS) {
+                    window.simpleTTS.toggleTTS();
+                    this.updateSecondAudioButton();
+                }
+            });
+        }
 
         // Assessment generation button
         const generateBtn = document.getElementById('generate-assessment-btn');
@@ -96,6 +105,22 @@ class MedicalInterviewHandler {
         // Assessment action buttons
         document.getElementById('accept-prescreening-btn')?.addEventListener('click', () => this.acceptPrescreening());
         document.getElementById('start-new-btn')?.addEventListener('click', () => this.startNewAssessment());
+    }
+
+    updateSecondAudioButton() {
+        if (!this.audioToggleBtn2 || !window.simpleTTS) return;
+        
+        const icon = this.audioToggleBtn2.querySelector('i');
+        
+        if (window.simpleTTS.isEnabled) {
+            this.audioToggleBtn2.textContent = '';
+            this.audioToggleBtn2.innerHTML = '<i class="fas fa-volume-up"></i> Disable Audio Questions';
+            this.audioToggleBtn2.classList.remove('disabled');
+        } else {
+            this.audioToggleBtn2.textContent = '';
+            this.audioToggleBtn2.innerHTML = '<i class="fas fa-volume-mute"></i> Enable Audio Questions';
+            this.audioToggleBtn2.classList.add('disabled');
+        }
     }
 
     autoResizeTextarea() {
@@ -175,11 +200,15 @@ class MedicalInterviewHandler {
         this.chatMessages.appendChild(messageDiv);
         this.scrollToBottom();
         
+        // TTS Integration: Convert AI question to speech
+        if (window.simpleTTS) {
+            window.simpleTTS.playQuestion(question);
+        }
+        
         // Auto-focus the text input after displaying question
         setTimeout(() => {
-            const answerInput = document.getElementById('answer-input');
-            if (answerInput) {
-                answerInput.focus();
+            if (this.answerTextarea) {
+                this.answerTextarea.focus();
             }
         }, 100);
     }
@@ -283,17 +312,18 @@ class MedicalInterviewHandler {
     }
 
     enableInput() {
-        this.answerTextarea.disabled = false;
-        this.sendButton.disabled = false;
-        this.dontKnowButton.disabled = false;
-        this.answerTextarea.focus();
-        document.getElementById('restart-interview').disabled = false;
+        if (this.answerTextarea) this.answerTextarea.disabled = false;
+        if (this.sendButton) this.sendButton.disabled = false;
+        if (this.dontKnowButton) this.dontKnowButton.disabled = false;
+        if (this.answerTextarea) this.answerTextarea.focus();
+        const restartBtn = document.getElementById('restart-interview');
+        if (restartBtn) restartBtn.disabled = false;
     }
 
     disableInput() {
-        this.answerTextarea.disabled = true;
-        this.sendButton.disabled = true;
-        this.dontKnowButton.disabled = true;
+        if (this.answerTextarea) this.answerTextarea.disabled = true;
+        if (this.sendButton) this.sendButton.disabled = true;
+        if (this.dontKnowButton) this.dontKnowButton.disabled = true;
     }
 
     completeInterview() {
@@ -399,9 +429,15 @@ class MedicalInterviewHandler {
         let chosenDoctor = null;
         let chosenDepartment = null;
         
-        if (sessionData.selected_doctor_choice) {
-            chosenDoctor = sessionData.selected_doctor_choice.doctor_name;
-            chosenDepartment = sessionData.selected_doctor_choice.department;
+        // Get selectedDoctorChoice from sessionStorage (stored with camelCase key)
+        const selectedDoctorChoice = JSON.parse(sessionStorage.getItem('selectedDoctorChoice') || '{}');
+        
+        console.log('[FRONTEND_DEBUG] Session data:', sessionData);
+        console.log('[FRONTEND_DEBUG] Selected doctor choice from storage:', selectedDoctorChoice);
+        
+        if (selectedDoctorChoice && selectedDoctorChoice.doctor_name) {
+            chosenDoctor = selectedDoctorChoice.doctor_name;
+            chosenDepartment = selectedDoctorChoice.department;
         }
         
         console.log('[FRONTEND_DEBUG] Chosen doctor:', chosenDoctor);
@@ -431,11 +467,11 @@ class MedicalInterviewHandler {
             
             // Try multiple paths to get the doctor name
             let followupDoctorName = consultationData.doctor_name || 
-                                   (sessionData.selected_doctor_choice && sessionData.selected_doctor_choice.doctor_name) ||
+                                   (selectedDoctorChoice && selectedDoctorChoice.doctor_name) ||
                                    recommended_doctor;
             
             const followupDepartment = consultationData.doctor_specialty || 
-                                     (sessionData.selected_doctor_choice && sessionData.selected_doctor_choice.department) ||
+                                     (selectedDoctorChoice && selectedDoctorChoice.department) ||
                                      recommended_department || '';
             
             // If still no valid doctor name, check if assessment response has it
@@ -449,35 +485,29 @@ class MedicalInterviewHandler {
             }
             
             console.log('[FRONTEND_DEBUG] Consultation data:', consultationData);
-            console.log('[FRONTEND_DEBUG] Selected doctor choice:', sessionData.selected_doctor_choice);
+            console.log('[FRONTEND_DEBUG] Selected doctor choice:', selectedDoctorChoice);
             console.log('[FRONTEND_DEBUG] Follow-up doctor name:', followupDoctorName);
             console.log('[FRONTEND_DEBUG] Follow-up department:', followupDepartment);
             
-            customMessage = `Ok, now please visit <strong>${followupDoctorName}</strong>${followupDepartment ? ` from <strong>${followupDepartment}</strong> Department` : ''} in 3rd floor. Estimated wait time is 25 minutes.`;
+            customMessage = `Your Pre-Screening information has been sent to Dr. ${followupDoctorName}.<br><br>Thank You.`;
         } else if (interviewType === 'help') {
             // Help me choose a doctor
-            customMessage = `Based on the symptoms you mentioned, it is recommended to visit <strong>${recommended_doctor}</strong> from <strong>${recommended_department}</strong> Department in 1st floor.`;
+            customMessage = `Your Pre-Screening information has been sent to Dr. ${recommended_doctor}.<br><br>Thank You.`;
         } else if (interviewType === 'new') {
-            // Visit new doctor - compare chosen vs suggested
+            // Visit new doctor - always show chosen doctor
             console.log('[FRONTEND_DEBUG] New visit - Chosen doctor:', chosenDoctor);
             console.log('[FRONTEND_DEBUG] New visit - Recommended doctor:', recommended_doctor);
             
-            if (chosenDoctor && chosenDoctor === recommended_doctor) {
-                // Same doctor chosen
-                customMessage = `You have chosen the correct doctor for your symptoms. Please visit <strong>${recommended_doctor}</strong> from <strong>${recommended_department}</strong> Department in 2nd floor. Estimated wait time is 30 minutes.`;
-            } else if (chosenDoctor && recommended_doctor) {
-                // Different doctor chosen - show both
-                customMessage = `You have chosen to visit <strong>${chosenDoctor}</strong>, but from your symptoms, it is suggested to visit <strong>${recommended_doctor}</strong> from <strong>${recommended_department}</strong> Department in 3rd floor.`;
-            } else if (recommended_doctor) {
-                // No chosen doctor found but have recommendation
-                customMessage = `Based on your symptoms, it is recommended to visit <strong>${recommended_doctor}</strong> from <strong>${recommended_department}</strong> Department in 2nd floor. Estimated wait time is 30 minutes.`;
+            if (chosenDoctor) {
+                // Always use chosen doctor for new visits
+                customMessage = `Your Pre-Screening information has been sent to Dr. ${chosenDoctor}.<br><br>Thank You.`;
             } else {
-                // Fallback
-                customMessage = `Please visit the recommended doctor for your symptoms.`;
+                // Fallback if no chosen doctor found
+                customMessage = `Your Pre-Screening information has been submitted to your chosen doctor.<br><br>Thank You.`;
             }
         } else {
             // Fallback for unknown types
-            customMessage = `Please visit <strong>${recommended_doctor}</strong> from <strong>${recommended_department}</strong> Department.`;
+            customMessage = `Your Pre-Screening information has been submitted to your chosen doctor.<br><br>Thank You.`;
         }
         
         console.log('[FRONTEND_DEBUG] Generated message:', customMessage);
@@ -647,14 +677,11 @@ class MedicalInterviewHandler {
                 console.log('[FRONTEND_DEBUG] Pre-screening accepted successfully:', result);
                 
                 // Show success message
-                this.showSuccessMessage(
-                    'Pre-screening data submitted successfully!', 
-                    `Record ID: ${result.record_id}<br>Visit Type: ${result.visit_type}`
-                );
+                this.showSuccessMessage('Thank You for Visiting');
                 
-                // Hide accept button after successful submission
+                // Remove accept button after successful submission
                 if (acceptButton) {
-                    acceptButton.style.display = 'none';
+                    acceptButton.remove();
                 }
                 
             } else {
@@ -683,7 +710,6 @@ class MedicalInterviewHandler {
                     <i class="fas fa-check-circle" style="color: #28a745; font-size: 1.2rem;"></i>
                     <div>
                         <strong>${title}</strong>
-                        ${details ? `<div style="margin-top: 5px; font-size: 0.9rem;">${details}</div>` : ''}
                     </div>
                 </div>
             </div>

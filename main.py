@@ -3,6 +3,10 @@ FastAPI Medical Pre-Screening Tool
 Main application entry point with API routes
 """
 
+# Load environment variables FIRST before any other imports
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,12 +15,9 @@ from fastapi.responses import JSONResponse, FileResponse
 from contextlib import asynccontextmanager
 import uvicorn
 import os
-from dotenv import load_dotenv
 
 from routers import medical, followup, departments, patients, face_recognition, session, assessment, prescreening, voice, patient_router
 from core.config import settings
-
-load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

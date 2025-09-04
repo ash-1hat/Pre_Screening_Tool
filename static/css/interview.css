@@ -1,5 +1,70 @@
 /* Interview Page Specific Styles */
 
+/* Audio Control */
+.audio-control-container {
+    padding: 15px 30px;
+    background: #fff;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.audio-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #26bc9f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.audio-toggle-btn:hover {
+    background: #1ea085;
+    transform: translateY(-1px);
+}
+
+.audio-toggle-btn.disabled {
+    background: #6c757d;
+}
+
+.audio-toggle-btn.disabled:hover {
+    background: #5a6268;
+}
+
+/* Second audio toggle button (below textbox) */
+.audio-toggle-btn-2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #26bc9f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: auto;
+}
+
+.audio-toggle-btn-2:hover {
+    background: #1ea085;
+    transform: translateY(-1px);
+}
+
+.audio-toggle-btn-2.disabled {
+    background: #6c757d;
+}
+
+.audio-toggle-btn-2.disabled:hover {
+    background: #5a6268;
+}
+
 /* Progress Bar */
 .progress-container {
     padding: 20px 30px;

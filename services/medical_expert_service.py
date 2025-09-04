@@ -4,7 +4,7 @@ Medical Expert AI Service - Core logic for medical interviews
 
 import os
 import warnings
-import genai
+from google import genai
 from google.genai import types
 from typing import Dict, List, Optional
 from datetime import datetime

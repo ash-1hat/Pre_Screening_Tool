@@ -1,0 +1,392 @@
+{
+	"info": {
+		"_postman_id": "3d4cb784-da97-4eb3-97fe-3074d9bb5acf",
+		"name": "OneHat - External APIs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27200300"
+	},
+	"item": [
+		{
+			"name": "Generate Auth Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"onehat_access_token\", jsonData.data.accessToken);",
+							"pm.environment.set(\"onehat_access_refresh\", jsonData.data.refreshToken);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/one-hat/api/external/auth/token?grantType=authorization&code=bXVrZXNoOllXUnRhVzQ9OjQ0NQ==",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"auth",
+						"token"
+					],
+					"query": [
+						{
+							"key": "grantType",
+							"value": "authorization"
+						},
+						{
+							"key": "code",
+							"value": "bXVrZXNoOllXUnRhVzQ9OjQ0NQ==",
+							"description": "Base 64 encoded value of username:base 64 encoded password : hospital id"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all doctors",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/one-hat/api/external/doctors",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"doctors"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Refresh Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"onehat_access_token\", jsonData.data.accessToken);",
+							"pm.environment.set(\"onehat_access_refresh\", jsonData.data.refreshToken);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/one-hat/api/external/auth/token?grantType=refresh&code={{onehat_access_refresh}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"auth",
+						"token"
+					],
+					"query": [
+						{
+							"key": "grantType",
+							"value": "refresh"
+						},
+						{
+							"key": "code",
+							"value": "{{onehat_access_refresh}}",
+							"description": "Base 64 encoded value of username:base 64 encoded password : hospital id"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Patient list by doctor",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/one-hat/api/external/patientlist/6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patientlist",
+						"6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Patient Details by patient id",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/one-hat/api/external/patients/52349",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"52349"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Chat",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"description": "Should ideally be a patient access token but for now since only doctor flow is setup going with doctor access token",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"timestamp\" : \"2025-05-17T18:00:00\",\n    \"query_summary\" : \"patient had fever, nausea and headache. They had it for 2 days and the headache increased progressively\",\n    \"answer_summary\" : \"Doctor suggested Dengue as possible diagnosis and suggested tointake lot of water to keep hydrated.\",\n    \"reference_files\" : [\"report.pdf\"],\n    \"query_status\" : \"closed\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/one-hat/api/external/patients/52349/chats",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"52349",
+						"chats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get doctor details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/one-hat/api/external/doctors/6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"doctors",
+						"6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Health Record by doctor",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"recordType\" : \"Report\",\n    \"doctorId\" : 6, // If the patient is not tagged to that doctor operation will fail\n    \"date\" : \"2025-06-17\", // expectation of the date to be in this format\n    \"recordName\" : \"Follow-up report\",\n    \"recordSource\" : \"record.pdf\" // Needs to be the same S3 location that is currently used by onehat so it can be rendered in the application\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/one-hat/api/external/patients/52349/health-records",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"52349",
+						"health-records"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Prescription",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"description": "Should ideally be a patient access token but for now since only doctor flow is setup going with doctor access token",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"doctorId\": 8,\n  \"date\": \"01-01-2025\",\n  \"expiryDate\": \"01-01-2026\",\n  \"diagnosis\": \"Health checkup\",\n  \"medications\": [\n    {\n      \"name\": \"ALLEGRA 120MG\",\n      \"morning_qty\": 1,\n      \"noon_qty\": 1,\n      \"evening_qty\": 1,\n      \"night_qty\": 1,\n      \"durationDays\": 3,\n      \"timeToTake\": \"after food\",\n      \"remarks\": \"Test\"\n    }\n  ],\n  \"notes\": \"fever checkup\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/one-hat/api/external/patients/52349/erx",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"52349",
+						"erx"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Assign Protocol",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"description": "Should ideally be a patient access token but for now since only doctor flow is setup going with doctor access token",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n   \n    \"patientId\" :57365,\n    \"assignedBy\" : 8,\n    \"protocol\": {\n        \"id\": 32\n    },\n    \"startDate\": \"2025-06-18T09:59:38.648Z\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/one-hat/api/external/patients/57365/assign-protocol",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"57365",
+						"assign-protocol"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

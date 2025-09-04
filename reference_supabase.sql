@@ -2,19 +2,19 @@
 -- Table order and constraints may not be valid for execution.
 
 CREATE TABLE public.consultations (
-  transcription_status character varying DEFAULT 'pending'::character varying,
-  webhook_received_at timestamp with time zone,
   doctor_id uuid NOT NULL,
   patient_id uuid NOT NULL,
   pradhi_submission_id character varying UNIQUE,
   parent_consultation_id uuid,
   raw_pradhi_response jsonb,
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  consultation_time timestamp with time zone NOT NULL DEFAULT now(),
+  consultation_time timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'Asia/Kolkata'::text),
+  transcription_status character varying DEFAULT 'pending'::character varying,
+  webhook_received_at timestamp with time zone,
   CONSTRAINT consultations_pkey PRIMARY KEY (id),
+  CONSTRAINT consultations_parent_consultation_id_fkey FOREIGN KEY (parent_consultation_id) REFERENCES public.consultations(id),
   CONSTRAINT consultations_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id),
-  CONSTRAINT consultations_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id),
-  CONSTRAINT consultations_parent_consultation_id_fkey FOREIGN KEY (parent_consultation_id) REFERENCES public.consultations(id)
+  CONSTRAINT consultations_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id)
 );
 CREATE TABLE public.dispatch_segments (
   dispatch_id uuid NOT NULL,
@@ -63,13 +63,13 @@ CREATE TABLE public.doctor_settings (
   CONSTRAINT doctor_settings_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id)
 );
 CREATE TABLE public.doctors (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
   onehat_doctor_id bigint NOT NULL UNIQUE,
   hospital_id bigint NOT NULL,
   username character varying NOT NULL UNIQUE,
   full_name text,
   email character varying UNIQUE,
   specialty character varying,
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT doctors_pkey PRIMARY KEY (id),
@@ -97,6 +97,24 @@ CREATE TABLE public.patients (
   phone_number character varying,
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   CONSTRAINT patients_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pre_screening_records (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  patient_uuid uuid,
+  patient_onehat_id bigint,
+  patient_chosen_doctor_onehat_id bigint,
+  suggested_department character varying,
+  suggested_doctor_onehat_id bigint,
+  visit_type character varying,
+  investigative_history text,
+  possible_diagnosis text,
+  chief_complaint text,
+  symptoms_mentioned ARRAY,
+  diagnostics jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT pre_screening_records_pkey PRIMARY KEY (id),
+  CONSTRAINT pre_screening_records_patient_uuid_fkey FOREIGN KEY (patient_uuid) REFERENCES public.patients(id)
 );
 CREATE TABLE public.record_segments (
   consultation_id uuid NOT NULL,

@@ -66,7 +66,8 @@ async def manual_patient_lookup(request: ManualPatientRequest):
             # Format for frontend
             patient_info = existing_patient["patient"]
             patient_data = {
-                "patient_id": str(patient_info.get("onehat_patient_id") or patient_info["id"]),
+                "patient_id": str(patient_info.get("onehat_patient_id") or patient_info["uuid"]),
+                "patient_uuid": str(patient_info["uuid"]),  # Add UUID for session storage
                 "name": patient_info["full_name"],
                 "mobile": patient_info["phone_number"],
                 "age": patient_info["age"],
@@ -93,11 +94,16 @@ async def manual_patient_lookup(request: ManualPatientRequest):
             raise HTTPException(status_code=500, detail="Failed to create new patient")
         
         patient_info = new_patient_data["patient"]
+        
+        # Use OneHat ID as patient_id if available, otherwise use UUID
+        patient_id = str(patient_info.get("onehat_patient_id") or patient_info["id"])
+        
         return {
             "success": True,
             "message": "New patient created successfully",
             "patient_data": {
-                "patient_id": str(patient_info["id"]),
+                "patient_id": patient_id,  # OneHat ID if available, otherwise UUID
+                "patient_uuid": str(patient_info["id"]),  # Always UUID for session storage
                 "name": patient_info["full_name"],
                 "mobile": patient_info["phone_number"],
                 "age": patient_info["age"],
@@ -144,6 +150,7 @@ async def face_recognition_lookup(image: UploadFile = File(...)):
             "message": "Patient recognized successfully",
             "patient_data": {
                 "patient_id": str(result["patient_data"]["patient_id"]),
+                "patient_uuid": str(result["patient_data"]["patient_uuid"]),  # Add UUID for session storage
                 "name": result["patient_data"]["name"],
                 "mobile": result["patient_data"]["mobile"],
                 "age": result["patient_data"]["age"],

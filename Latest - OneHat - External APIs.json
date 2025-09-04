@@ -1,0 +1,804 @@
+{
+	"info": {
+		"_postman_id": "425feb1d-d7ff-4590-8d66-46cd34df9774",
+		"name": "OneHat - External APIs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "3172706"
+	},
+	"item": [
+		{
+			"name": "Generate Auth Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"onehat_access_token\", jsonData.data.accessToken);",
+							"pm.environment.set(\"onehat_access_refresh\", jsonData.data.refreshToken);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/auth/token?grantType=authorization&code=bXVrZXNoOllXUnRhVzQ9OjQ0NQ==",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"auth",
+						"token"
+					],
+					"query": [
+						{
+							"key": "grantType",
+							"value": "authorization"
+						},
+						{
+							"key": "code",
+							"value": "bXVrZXNoOllXUnRhVzQ9OjQ0NQ==",
+							"description": "Base 64 encoded value of username:base 64 encoded password : hospital id"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Refresh Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"onehat_access_token\", jsonData.data.accessToken);",
+							"pm.environment.set(\"onehat_access_refresh\", jsonData.data.refreshToken);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/auth/token?grantType=refresh&code={{onehat_access_refresh}}",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"auth",
+						"token"
+					],
+					"query": [
+						{
+							"key": "grantType",
+							"value": "refresh"
+						},
+						{
+							"key": "code",
+							"value": "{{onehat_access_refresh}}",
+							"description": "Base 64 encoded value of username:base 64 encoded password : hospital id"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all doctors",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/doctors",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"doctors"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get doctor details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/doctors/6",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"doctors",
+						"6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Patient list by doctor",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/patientlist/6",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patientlist",
+						"6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Patient Details by patient id",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/patients/52349",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"52349"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Chat",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"description": "Should ideally be a patient access token but for now since only doctor flow is setup going with doctor access token",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"timestamp\" : \"2025-05-17T18:00:00\",\n    \"query_summary\" : \"patient had fever, nausea and headache. They had it for 2 days and the headache increased progressively\",\n    \"answer_summary\" : \"Doctor suggested Dengue as possible diagnosis and suggested tointake lot of water to keep hydrated.\",\n    \"reference_files\" : [\"report.pdf\"],\n    \"query_status\" : \"closed\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/patients/52349/chats",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"52349",
+						"chats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Health Record by doctor",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"recordType\" : \"Report\",\n    \"doctorId\" : 6, // If the patient is not tagged to that doctor operation will fail\n    \"date\" : \"2025-06-17\", // expectation of the date to be in this format\n    \"recordName\" : \"Follow-up report\",\n    \"recordSource\" : \"record.pdf\" // Needs to be the same S3 location that is currently used by onehat so it can be rendered in the application\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/patients/52349/health-records",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"52349",
+						"health-records"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Prescription",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"description": "Should ideally be a patient access token but for now since only doctor flow is setup going with doctor access token",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"doctorId\": 8,\n  \"date\": \"01-01-2025\",\n  \"expiryDate\": \"01-01-2026\",\n  \"diagnosis\": \"Health checkup\",\n  \"medications\": [\n    {\n      \"name\": \"ALLEGRA 120MG\",\n      \"morning_qty\": 1,\n      \"noon_qty\": 1,\n      \"evening_qty\": 1,\n      \"night_qty\": 1,\n      \"durationDays\": 3,\n      \"timeToTake\": \"after food\",\n      \"remarks\": \"Test\"\n    }\n  ],\n  \"notes\": \"fever checkup\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/patients/52349/erx",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"52349",
+						"erx"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Patient",
+			"request": {
+				"method": "POST",
+				"header": {
+					"key": "Authorization",
+					"value": "Bearer {{onehat_access_token}}"
+				},
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"age\" : \"25\",\n    \"gender\" : \"Male\",\n    \"hospitalId\" : 445,\n    \"mobileNo\" : \"1111111111\",\n    \"name\" : \"Kumar\"\n    }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/patients/create-patient",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"create-patient"
+					]
+				}
+			},
+			"response": {
+				"status": "SUCCESS",
+				"message": "Patient created successfully",
+				"data": "271498"
+			}
+		},
+		{
+			"name": "Assign Protocol",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"description": "Should ideally be a patient access token but for now since only doctor flow is setup going with doctor access token",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n   \n    \"patientId\" :57365,\n    \"assignedBy\" : 8,\n    \"protocol\": {\n        \"id\": 32\n    },\n    \"startDate\": \"2025-06-18T09:59:38.648Z\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/patients/57365/assign-protocol",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"57365",
+						"assign-protocol"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Custom Events",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"displayName\": \"Adhoc Exercise\",\n    \"isDeleted\": false,\n    \"createdBy\": {\n        \"id\": 8\n    },\n    \"updatedBy\": {\n        \"id\": 8\n    },\n    \"isDefault\": false,\n    \"createdOn\": \"2025-07-22T06:03:25.499Z\",\n    \"updatedOn\": \"2025-07-22T06:03:25.499Z\",\n    \"patientProtocolId\": \"70388\",\n    \"firstEventDate\": \"2025-08-30T18:30:00.000Z\",\n    \"frequencies\": [\n        {\n            \"subActivity\": {\n                \"id\": 52017\n            },\n            \"displayName\": \"Jog\",\n            \"description\": \"Light Exercise - Jog\",\n            \"instruction\": \"\",\n            \"triggerPoint\": 1,\n            \"triggerPointUnits\": \"DAYS\",\n            \"frequency\": 10,\n            \"interval\": 1,\n            \"intervalUnits\": \"DAYS\",\n            \"subInterval\": null,\n            \"subIntervalUnits\": null,\n            \"createdBy\": {\n                \"id\": 8\n            },\n            \"updatedBy\": {\n                \"id\": 8\n            },\n            \"isDeleted\": false,\n            \"media\": null,\n            \"createdOn\": \"2025-07-22T06:03:25.499Z\",\n            \"updatedOn\": \"2025-07-22T06:03:25.499Z\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/events/custom/4060",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"events",
+						"custom",
+						"4060"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Override Protocol",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n   \n    \"patientId\" :3833,\n    \"assignedBy\" : 8,\n    \"protocol\": {\n        \"id\": 96\n    },\n    \"patientProtocolId\" : 230164\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/patients/57365/override-protocol",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"57365",
+						"override-protocol"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Protocol",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"patientId\": 57365,\n    \"assignedBy\": 6,\n    \"protocol\": {\n        \"id\": null,\n        \"displayName\": \"New Test Protocol\",\n        \"blocks\": [\n            {\n                \"displayName\": \"Consultation\",\n                \"description\": \"Consultation\",\n                \"frequencies\": [\n                    {\n                        \"subActivity\": {\n                            \"id\": 56530\n                        },\n                        \"displayName\": \"Follow-up Consultation\",\n                        \"description\": \"Need to come back for consulation every week in the next month\",\n                        \"instruction\": \"visit doctor and bring back reports\",\n                        \"triggerPoint\": 1,\n                        \"triggerPointUnits\": \"WEEK\",\n                        \"frequency\": 4,\n                        \"interval\": 1,\n                        \"intervalUnits\": \"WEEK\",\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-07-18T07:24:14.078Z\",\n                        \"updatedOn\": \"2025-07-18T07:24:14.078Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-08-19T07:24:14.078Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-08-19T07:24:14.078Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    }\n                ],\n                \"patientActions\": [\n                    \"BOOK_APPT\"\n                ],\n                \"doctorActions\": [\n                    \"UPLOAD_REPORT\",\n                    \"BLOOD_PRESSURE\",\n                    \"BLOOD_GLUCOSE\"\n                ],\n                \"createdBy\": {\n                    \"id\": 6\n                },\n                \"updatedBy\": {\n                    \"id\": 6\n                },\n                \"isDeleted\": false,\n                \"createdOn\": \"2025-08-19T07:24:14.078Z\",\n                \"updatedOn\": \"2025-08-19T07:24:14.078Z\"\n            },\n            {\n                \"displayName\": \"Exercise\",\n                \"description\": \"Simple exercise\",\n                \"frequencies\": [\n                    {\n                        \"subActivity\": {\n                            \"id\": 52017\n                        },\n                        \"displayName\": \"Jog\",\n                        \"description\": \"Needs to jog atleast for 30 minutes a day for the next 30 days\",\n                        \"instruction\": \"Log duration, BPM and speed of Jog\",\n                        \"triggerPoint\": 1,\n                        \"triggerPointUnits\": \"DAYS\",\n                        \"frequency\": 30,\n                        \"interval\": 1,\n                        \"intervalUnits\": \"DAYS\",\n                        \"subInterval\": null,\n                        \"subIntervalUnits\": null,\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-08-19T07:24:14.078Z\",\n                        \"updatedOn\": \"2025-08-19T07:24:14.078Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-08-19T07:24:14.078Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-08-19T07:24:14.078Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    }\n                ],\n                \"patientActions\": [\n                    \"UPLOAD_REPORT\"\n                ],\n                \"doctorActions\": [],\n                \"createdBy\": {\n                    \"id\": 6\n                },\n                \"updatedBy\": {\n                    \"id\": 6\n                },\n                \"isDeleted\": false,\n                \"createdOn\": \"2025-08-19T07:24:14.078Z\",\n                \"updatedOn\": \"2025-08-19T07:24:14.078Z\"\n            },\n            {\n                \"displayName\": \"Physiotherapy\",\n                \"description\": \"Knee exercises\",\n                \"frequencies\": [\n                    {\n                        \"subActivity\": {\n                            \"id\": 51900\n                        },\n                        \"displayName\": \"Physiotherapy Knee Exercises\",\n                        \"description\": \"Twice a week for the next 4 weeks need to do physiotherapy\",\n                        \"instruction\": \"Book the service of a physiotherapist a day before\",\n                        \"triggerPoint\": 1,\n                        \"triggerPointUnits\": \"WEEK\",\n                        \"frequency\": 8,\n                        \"interval\": 3,\n                        \"intervalUnits\": \"DAYS\",\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-08-19T07:24:14.078Z\",\n                        \"updatedOn\": \"2025-08-19T07:24:14.078Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-08-19T07:24:14.078Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-08-19T07:24:14.078Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    }\n                ],\n                \"patientActions\": [\n                    \"UPLOAD_REPORT\"\n                ],\n                \"doctorActions\": [],\n                \"createdBy\": {\n                    \"id\": 6\n                },\n                \"updatedBy\": {\n                    \"id\": 6\n                },\n                \"isDeleted\": false,\n                \"createdOn\": \"2025-07-18T07:24:14.078Z\",\n                \"updatedOn\": \"2025-07-18T07:24:14.078Z\"\n            },\n            {\n                \"displayName\": \"Scan\",\n                \"description\": \"Scanning Appointment\",\n                \"frequencies\": [\n                    {\n                        \"subActivity\": {\n                            \"id\": 64390\n                        },\n                        \"displayName\": \"MRI Scan\",\n                        \"description\": \"Scan every other week for the next 4 weeks\",\n                        \"instruction\": \"Book appointment for scan\",\n                        \"triggerPoint\": 1,\n                        \"triggerPointUnits\": \"WEEK\",\n                        \"frequency\": 2,\n                        \"interval\": 2,\n                        \"intervalUnits\": \"WEEK\",\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-07-18T07:24:14.078Z\",\n                        \"updatedOn\": \"2025-07-18T07:24:14.078Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-07-18T07:24:14.078Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-07-18T07:24:14.078Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    }\n                ],\n                \"patientActions\": [\n                    \"BOOK_APPT\"\n                ],\n                \"doctorActions\": [\n                    \"UPLOAD_REPORT\"\n                ],\n                \"createdBy\": {\n                    \"id\": 6\n                },\n                \"updatedBy\": {\n                    \"id\": 6\n                },\n                \"isDeleted\": false,\n                \"createdOn\": \"2025-07-18T07:24:14.078Z\",\n                \"updatedOn\": \"2025-07-18T07:24:14.078Z\"\n            },\n            {\n                \"displayName\": \"Exercise\",\n                \"description\": \"Training\",\n                \"frequencies\": [\n                    {\n                        \"subActivity\": {\n                            \"id\": 55091\n                        },\n                        \"displayName\": \"Strength Training\",\n                        \"description\": \"Alternate days of mild to low strength training after the 2nd week for a month\",\n                        \"instruction\": \"Upload report on completion\",\n                        \"triggerPoint\": 2,\n                        \"triggerPointUnits\": \"WEEK\",\n                        \"frequency\": 15,\n                        \"interval\": 2,\n                        \"intervalUnits\": \"DAYS\",\n                        \"subInterval\": null,\n                        \"subIntervalUnits\": null,\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-07-18T07:24:14.078Z\",\n                        \"updatedOn\": \"2025-07-18T07:24:14.078Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-07-18T07:24:14.078Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-07-18T07:24:14.078Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    }\n                ],\n                \"patientActions\": [\n                    \"UPLOAD_REPORT\"\n                ],\n                \"doctorActions\": [],\n                \"createdBy\": {\n                    \"id\": 6\n                },\n                \"updatedBy\": {\n                    \"id\": 6\n                },\n                \"isDeleted\": false,\n                \"createdOn\": \"2025-07-18T07:24:14.078Z\",\n                \"updatedOn\": \"2025-07-18T07:24:14.078Z\"\n            },\n            {\n                \"displayName\": \"BP\",\n                \"description\": \"measure BP on sporadic times\",\n                \"frequencies\": [\n                    {\n                        \"subActivity\": {\n                            \"id\": 57330\n                        },\n                        \"description\": \"measure BP on sporadic times\",\n                        \"instruction\": \"Measure BP\",\n                        \"triggerPoint\": 1,\n                        \"triggerPointUnits\": \"MONTH\",\n                        \"frequency\": 1,\n                        \"interval\": 1,\n                        \"intervalUnits\": \"DAYS\",\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    },\n                    {\n                        \"subActivity\": {\n                            \"id\": 57330\n                        },\n                        \"description\": \"measure BP on sporadic times\",\n                        \"instruction\": \"Measure BP\",\n                        \"triggerPoint\": 1,\n                        \"triggerPointUnits\": \"MONTH\",\n                        \"frequency\": 1,\n                        \"interval\": 10,\n                        \"intervalUnits\": \"DAYS\",\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    },\n                    {\n                        \"subActivity\": {\n                            \"id\": 57330\n                        },\n                        \"description\": \"measure BP on sporadic times\",\n                        \"instruction\": \"Measure BP\",\n                        \"triggerPoint\": 1,\n                        \"triggerPointUnits\": \"MONTH\",\n                        \"frequency\": 1,\n                        \"interval\": 5,\n                        \"intervalUnits\": \"DAYS\",\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    },\n                    {\n                        \"subActivity\": {\n                            \"id\": 57330\n                        },\n                        \"description\": \"measure BP on sporadic times\",\n                        \"instruction\": \"Measure BP\",\n                        \"triggerPoint\": 1,\n                        \"triggerPointUnits\": \"MONTH\",\n                        \"frequency\": 1,\n                        \"interval\": 15,\n                        \"intervalUnits\": \"DAYS\",\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    },\n                    {\n                        \"subActivity\": {\n                            \"id\": 57330\n                        },\n                        \"description\": \"measure BP on sporadic times\",\n                        \"instruction\": \"Measure BP\",\n                        \"triggerPoint\": 1,\n                        \"triggerPointUnits\": \"MONTH\",\n                        \"frequency\": 1,\n                        \"interval\": 20,\n                        \"intervalUnits\": \"DAYS\",\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    },\n                    {\n                        \"subActivity\": {\n                            \"id\": 57330\n                        },\n                        \"description\": \"measure BP on sporadic times\",\n                        \"instruction\": \"Measure BP\",\n                        \"triggerPoint\": 1,\n                        \"triggerPointUnits\": \"MONTH\",\n                        \"frequency\": 1,\n                        \"interval\": 25,\n                        \"intervalUnits\": \"DAYS\",\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    },\n                    {\n                        \"subActivity\": {\n                            \"id\": 57330\n                        },\n                        \"description\": \"measure BP on sporadic times\",\n                        \"instruction\": \"Measure BP\",\n                        \"triggerPoint\": 1,\n                        \"triggerPointUnits\": \"MONTH\",\n                        \"frequency\": 1,\n                        \"interval\": 26,\n                        \"intervalUnits\": \"DAYS\",\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    },\n                    {\n                        \"subActivity\": {\n                            \"id\": 57330\n                        },\n                        \"description\": \"measure BP on sporadic times\",\n                        \"instruction\": \"Measure BP\",\n                        \"triggerPoint\": 1,\n                        \"triggerPointUnits\": \"MONTH\",\n                        \"frequency\": 1,\n                        \"interval\": 27,\n                        \"intervalUnits\": \"DAYS\",\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    },\n                    {\n                        \"subActivity\": {\n                            \"id\": 57330\n                        },\n                        \"description\": \"measure BP on sporadic times\",\n                        \"instruction\": \"Measure BP\",\n                        \"triggerPoint\": 1,\n                        \"triggerPointUnits\": \"MONTH\",\n                        \"frequency\": 1,\n                        \"interval\": 28,\n                        \"intervalUnits\": \"DAYS\",\n                        \"createdBy\": {\n                            \"id\": 6\n                        },\n                        \"updatedBy\": {\n                            \"id\": 6\n                        },\n                        \"isDeleted\": false,\n                        \"media\": null,\n                        \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                        \"notificationConfig\": {\n                            \"startPoint\": 1,\n                            \"notificationFrequency\": 1,\n                            \"interval\": 1,\n                            \"intervalUnits\": \"DAYS\",\n                            \"endPoint\": 0,\n                            \"messageTemplate\": {\n                                \"id\": 2\n                            },\n                            \"isPushNotification\": true,\n                            \"isMessangerNotification\": false,\n                            \"isSmsNotification\": true,\n                            \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"createdBy\": {\n                                \"id\": 6\n                            },\n                            \"updatedOn\": \"2025-07-18T08:23:44.432Z\",\n                            \"updatedBy\": {\n                                \"id\": 6\n                            },\n                            \"isDeleted\": false\n                        }\n                    }\n                ],\n                \"patientActions\": [\n                    \"BLOOD_PRESSURE\"\n                ],\n                \"doctorActions\": [],\n                \"createdBy\": {\n                    \"id\": 6\n                },\n                \"updatedBy\": {\n                    \"id\": 6\n                },\n                \"isDeleted\": false,\n                \"createdOn\": \"2025-07-18T08:23:44.432Z\",\n                \"updatedOn\": \"2025-07-18T08:23:44.432Z\"\n            }\n        ],\n        \"isDeleted\": false,\n        \"createdBy\": {\n            \"id\": 6\n        },\n        \"updatedBy\": {\n            \"id\": 6\n        },\n        \"isDefault\": false,\n        \"createdOn\": \"2025-08-19T08:23:44.432Z\",\n        \"updatedOn\": \"2025-08-19T08:23:44.432Z\"\n    },\n    \"startDate\": \"2025-08-30T09:59:38.648Z\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/patients/57365/assign-protocol",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"57365",
+						"assign-protocol"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Protocol",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": 12,\n    \"displayName\": \"Knee Surgery Update one two\",\n    \"blocks\": [\n        {\n         //   \"id\": 57872,\n            \"displayName\": \"Exercise\",\n            \"description\": \"jog\",\n            \"assistanceReqdFrom\": null,\n            \"location\": null,\n            \"frequencies\": [\n                {\n                  //  \"id\": 57873,\n                    \"subActivity\": {\n                        \"id\": 52017,\n                        \"activity\": {\n                            \"id\": 52016\n                        }\n                    },\n                    \"displayName\": \"Jog\",\n                    \"description\": \"jog\",\n                    \"triggerPoint\": 1,\n                    \"triggerPointUnits\": \"DAYS\",\n                    \"frequency\": 15,\n                    \"interval\": 1,\n                    \"intervalUnits\": \"DAYS\",\n                    \"subInterval\": null,\n                    \"subIntervalUnits\": null,\n                    \"notificationConfig\": {\n                        \"id\": 57873,\n                        \"startPoint\": 1,\n                        \"notificationFrequency\": 1,\n                        \"interval\": 1,\n                        \"intervalUnits\": \"DAYS\",\n                        \"endPoint\": 0,\n                        \"messageTemplate\": {\n                            \"id\": 2,\n                            \"externalRefId\": \"MSG-002\",\n                            \"description\": \"Template for event reminders\",\n                            \"templateBody\": \"${sub_activity} is due today\",\n                            \"updatedOn\": \"2025-03-02T00:00:00\",\n                            \"updatedBy\": {\n                                \"id\": 8\n                            },\n                            \"deleted\": false\n                        },\n                         \"createdOn\": \"2025-07-21T13:54:46.857Z\",\n                        \"updatedOn\": \"2025-05-13T12:06:11.11072\",\n                        \"updatedBy\": {\n                            \"id\": 8\n                        },\n                        \"isPushNotification\": true,\n                        \"isMessangerNotification\": false,\n                        \"isSmsNotification\": true\n                    },\n                      \"createdOn\": \"2025-07-21T13:54:46.857Z\",\n                    \"updatedOn\": \"2025-05-13T12:06:11.118927\",\n                    \"updatedBy\": {\n                        \"id\": 8\n                    },\n                    \"protocolEndDate\": null,\n                    \"media\": null,\n                    \"type\": null,\n                    \"dependency\": null,\n                    \"instruction\": \"jog\"\n                }\n            ],\n            \"patientActions\": [\n                \"BODY_WEIGHT\",\n                \"UPLOAD_REPORT\",\n                \"BLOOD_PRESSURE\",\n                \"BLOOD_GLUCOSE\",\n                \"TEMPERATURE\",\n                \"KICK_COUNT\",\n                \"BOOK_APPT\"\n            ],\n            \"doctorActions\": [\n                \"UPLOAD_REPORT\",\n                \"BLOOD_PRESSURE\",\n                \"BODY_WEIGHT\",\n                \"BLOOD_GLUCOSE\",\n                \"KICK_COUNT\",\n                \"TEMPERATURE\"\n            ],\n              \"createdOn\": \"2025-07-21T13:54:46.857Z\",\n            \"updatedOn\": \"2025-05-13T12:06:11.117695\",\n            \"updatedBy\": {\n                \"id\": 8\n            },\n            \"isDeleted\": false\n        }\n    ],\n\n    \"isDeleted\": false,\n    \"createdBy\": {\n        \"id\": 8\n    },\n    \"updatedBy\": {\n        \"id\": 8\n    },\n    \"isDefault\": false,\n    \"createdOn\": \"2025-07-21T13:54:46.857Z\",\n    \"updatedOn\": \"2025-07-21T13:54:46.857Z\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/patients/update-protocol",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patients",
+						"update-protocol"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Protocol",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/12",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"12"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get ProtocolById",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/protocol/5",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"protocol",
+						"5"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All subactivity",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/sub-activity",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"sub-activity"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Hospitals",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/hospitals",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"hospitals"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Subactivity",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{onehat_access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n \"subActivity\" : \"Online Consultation\",\n \"displayName\" :\"Online Consultation\",\n \"description\" : \"Can be a chat or a online consultation\",\n \"activity\":{\n    \"id\" : 51896\n }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/create/sub-activity",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"create",
+						"sub-activity"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Events for a Patient Protocol",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "Bearer {{onehat_access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://65.2.35.118/one-hat/api/external/patient-protocol/21735/all-events",
+					"protocol": "http",
+					"host": [
+						"65",
+						"2",
+						"35",
+						"118"
+					],
+					"path": [
+						"one-hat",
+						"api",
+						"external",
+						"patient-protocol",
+						"21735",
+						"all-events"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

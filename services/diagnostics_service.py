@@ -6,13 +6,15 @@ import csv
 import os
 import json
 from typing import Dict, List, Optional, Any
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from core.config import settings
 
 class DiagnosticsService:
     def __init__(self):
         self.diagnostics_data = []
-        self.model = None
+        self.client = None
+        self.model = settings.gemini_model
         self._load_diagnostics_data()
         self._initialize_gemini()
         
@@ -30,14 +32,13 @@ class DiagnosticsService:
             self.diagnostics_data = []
     
     def _initialize_gemini(self):
-        """Initialize Gemini AI model"""
+        """Initialize Gemini AI client"""
         try:
-            genai.configure(api_key=settings.gemini_api_key)
-            self.model = genai.GenerativeModel(settings.gemini_model)
-            print(f"[DIAGNOSTICS_SERVICE] Gemini initialized with model: {settings.gemini_model}")
+            self.client = genai.Client(api_key=settings.gemini_api_key)
+            print(f"[DIAGNOSTICS_SERVICE] Gemini client initialized with model: {self.model}")
         except Exception as e:
             print(f"[DIAGNOSTICS_SERVICE] Error initializing Gemini: {e}")
-            self.model = None
+            self.client = None
     
     def get_pre_consultation_diagnostics(self, possible_diagnosis: str, investigative_history: str) -> Dict[str, Any]:
         """
@@ -50,7 +51,7 @@ class DiagnosticsService:
         Returns:
             Dictionary with diagnostics suggestions grouped by type
         """
-        if not self.model or not self.diagnostics_data:
+        if not self.client or not self.diagnostics_data:
             return {"diagnostics": {}, "matched_condition": None, "explanation": "Diagnostics service unavailable"}
         
         try:
@@ -77,8 +78,11 @@ class DiagnosticsService:
             print(f"[DIAGNOSTICS_DEBUG] Matching diagnosis: '{possible_diagnosis}'")
             print(f"[DIAGNOSTICS_DEBUG] Available conditions: {len(csv_conditions)}")
             
-            # Get LLM response
-            response = self.model.generate_content(prompt)
+            # Get LLM response using new API
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt
+            )
             
             if not response or not response.text:
                 return {"diagnostics": {}, "matched_condition": None}

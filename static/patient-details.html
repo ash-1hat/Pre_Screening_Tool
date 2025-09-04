@@ -641,13 +641,6 @@
                         </div>
                     </div>
                     
-                    <div class="radio-option" onclick="selectDoctorOption('help')">
-                        <label>
-                            <input type="radio" name="doctorChoice" value="help" id="helpChooseOption">
-                            Help me choose a doctor
-                        </label>
-                        <div class="radio-description">Get AI-powered doctor recommendation based on your symptoms</div>
-                    </div>
                 </div>
             `;
             
@@ -681,10 +674,6 @@
                         doctor_id: consultationData?.doctor_onehat_id || consultationData?.doctor_uuid,
                         doctor_name: consultationData?.doctor_name,
                         doctor_specialty: consultationData?.doctor_specialty
-                    }));
-                } else if (option === 'help') {
-                    sessionStorage.setItem('selectedDoctorChoice', JSON.stringify({
-                        type: 'help'
                     }));
                 }
                 
@@ -775,9 +764,9 @@
         function updateSelectedDoctorDisplay() {
             const selectedDoctorChoice = JSON.parse(sessionStorage.getItem('selectedDoctorChoice') || '{}');
             const displayDiv = document.getElementById('selectedDoctorDisplay');
-            const contentDiv = document.getElementById('doctorDisplayContent');
+            const contentDiv = document.getElementById('selectedDoctorInfo');
             
-            if (selectedDoctorChoice.type) {
+            if (selectedDoctorChoice.type && contentDiv) {
                 let displayText = '';
                 
                 switch(selectedDoctorChoice.type) {
@@ -795,17 +784,14 @@
                             <strong>Department:</strong> ${selectedDoctorChoice.department_name}
                         `;
                         break;
-                    case 'help':
-                        displayText = `<strong>AI will help choose the best doctor for you</strong>`;
-                        break;
                     default:
                         displayText = `<strong>No doctor selected yet</strong>`;
                 }
                 
                 contentDiv.innerHTML = displayText;
-                displayDiv.style.display = 'block';
+                if (displayDiv) displayDiv.style.display = 'block';
             } else {
-                displayDiv.style.display = 'none';
+                if (displayDiv) displayDiv.style.display = 'none';
             }
         }
 

@@ -345,28 +345,41 @@ class SupabaseService:
     
     async def create_new_patient(self, name: str, mobile: str, age: int, gender: str) -> Optional[Dict[str, Any]]:
         """
-        Create a new patient entry in Supabase
-        onehat_patient_id will be null, other fields default to null
+        Create a new patient entry in Supabase with OneHat integration
+        Attempts to create patient in OneHat first, then stores with OneHat ID
+        Falls back to NULL onehat_patient_id if OneHat creation fails
         """
         try:
             logger.info(f"🆕 Creating new patient: {name}, Mobile: {mobile}")
             
+            # Step 1: Attempt to create patient in OneHat system
+            onehat_patient_id = None
+            try:
+                from services.onehat_service import onehat_service
+                onehat_patient_id = await onehat_service.create_patient(name, mobile, age, gender)
+                logger.info(f"✅ OneHat patient created with ID: {onehat_patient_id}")
+            except Exception as e:
+                logger.warning(f"⚠️ OneHat patient creation failed: {e}. Proceeding with NULL onehat_patient_id")
+                # Continue with Supabase creation even if OneHat fails
+            
+            # Step 2: Create patient in Supabase with OneHat ID (or NULL if failed)
             patient_data = {
                 "full_name": name,
                 "phone_number": mobile,
                 "age": age,
                 "gender": gender,
-                "onehat_patient_id": None,
-                "email": None,
-                "address": None,
-                "emergency_contact": None
+                "onehat_patient_id": onehat_patient_id,  # Now has actual OneHat ID or NULL
+                "date_of_birth": None
             }
             
             response = self.client.table("patients").insert(patient_data).execute()
             
             if response.data and len(response.data) > 0:
                 new_patient = response.data[0]
-                logger.info(f"✅ New patient created with UUID: {new_patient['id']}")
+                if onehat_patient_id:
+                    logger.info(f"✅ New patient created with UUID: {new_patient['id']} and OneHat ID: {onehat_patient_id}")
+                else:
+                    logger.info(f"✅ New patient created with UUID: {new_patient['id']} (OneHat ID: NULL)")
                 
                 return {
                     "patient": new_patient,
@@ -383,7 +396,7 @@ class SupabaseService:
 
     async def create_prescreening_record(self, prescreening_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
-        Create a new pre-screening record in Supabase
+        Create a new pre-screening record in Supabase and update doctor-patient relations
         
         Args:
             prescreening_data (Dict[str, Any]): Pre-screening data to store
@@ -414,6 +427,13 @@ class SupabaseService:
             if response.data and len(response.data) > 0:
                 created_record = response.data[0]
                 logger.info(f"✅ Pre-screening record created with ID: {created_record['id']}")
+                
+                # Update doctor-patient relations
+                await self._update_doctor_patient_relations(
+                    patient_uuid=prescreening_data.get("patient_uuid"),
+                    patient_chosen_doctor_onehat_id=prescreening_data.get("patient_chosen_doctor_onehat_id")
+                )
+                
                 return created_record
             else:
                 logger.error("❌ Failed to create pre-screening record - no data returned")
@@ -422,6 +442,72 @@ class SupabaseService:
         except Exception as e:
             logger.error(f"Error in create_prescreening_record: {e}")
             return None
+
+    async def _update_doctor_patient_relations(self, patient_uuid: str, patient_chosen_doctor_onehat_id: Optional[int]) -> None:
+        """
+        Update or create doctor-patient relations record
+        
+        Args:
+            patient_uuid (str): Patient UUID
+            patient_chosen_doctor_onehat_id (Optional[int]): Doctor's OneHat ID
+        """
+        try:
+            # Skip if no doctor chosen
+            if not patient_chosen_doctor_onehat_id:
+                logger.info("🔄 No chosen doctor ID provided, skipping doctor-patient relations update")
+                return
+            
+            logger.info(f"🔄 Updating doctor-patient relations for patient {patient_uuid}, doctor OneHat ID: {patient_chosen_doctor_onehat_id}")
+            
+            # Step 1: Lookup doctor UUID using onehat_doctor_id
+            doctor_response = self.client.table("doctors").select("id").eq("onehat_doctor_id", patient_chosen_doctor_onehat_id).execute()
+            
+            if not doctor_response.data or len(doctor_response.data) == 0:
+                logger.warning(f"⚠️ Doctor not found with onehat_doctor_id: {patient_chosen_doctor_onehat_id}")
+                return
+            
+            doctor_uuid = doctor_response.data[0]["id"]
+            logger.info(f"📋 Found doctor UUID: {doctor_uuid}")
+            
+            # Step 2: Check if relation already exists
+            existing_relation_response = self.client.table("doctor_patient_relations").select("id").eq("doctor_id", doctor_uuid).eq("patient_id", patient_uuid).execute()
+            
+            from datetime import datetime
+            current_timestamp = datetime.now().isoformat()
+            
+            if existing_relation_response.data and len(existing_relation_response.data) > 0:
+                # Update existing relation
+                relation_id = existing_relation_response.data[0]["id"]
+                update_response = self.client.table("doctor_patient_relations").update({
+                    "updated_at": current_timestamp,
+                    "is_active": True
+                }).eq("id", relation_id).execute()
+                
+                if update_response.data:
+                    logger.info(f"✅ Updated existing doctor-patient relation: {relation_id}")
+                else:
+                    logger.error(f"❌ Failed to update doctor-patient relation: {relation_id}")
+            else:
+                # Create new relation
+                new_relation_data = {
+                    "doctor_id": doctor_uuid,
+                    "patient_id": patient_uuid,
+                    "created_at": current_timestamp,
+                    "updated_at": current_timestamp,
+                    "is_active": True
+                }
+                
+                create_response = self.client.table("doctor_patient_relations").insert(new_relation_data).execute()
+                
+                if create_response.data and len(create_response.data) > 0:
+                    new_relation_id = create_response.data[0]["id"]
+                    logger.info(f"✅ Created new doctor-patient relation: {new_relation_id}")
+                else:
+                    logger.error("❌ Failed to create new doctor-patient relation")
+                    
+        except Exception as e:
+            logger.error(f"Error in _update_doctor_patient_relations: {e}")
+            # Don't raise exception - relation update failure shouldn't break pre-screening record creation
 
 # Global instance
 supabase_service = SupabaseService()

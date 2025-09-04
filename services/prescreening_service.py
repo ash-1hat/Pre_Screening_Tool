@@ -198,25 +198,28 @@ class PreScreeningService:
             # patient_id in session is actually OneHat ID, we need to extract UUID from consultation data or use fallback
             patient_onehat_id = patient_info.get("patient_id")  # This is actually the OneHat ID (52349)
             
-            # Extract patient UUID - try multiple sources
+            # Extract patient UUID - now available from session data
             patient_uuid = None
-            # From the logs, UUID is available in consultation_data or we can extract from patient details
-            if consultation_data and 'patient_id' in str(consultation_data):
-                # Extract UUID from consultation data if available
-                patient_uuid = consultation_data.get("patient_uuid")
-            # Fallback: use a consistent UUID extraction method
-            if not patient_uuid and patient_info.get("patient_uuid"):
+            # Primary source: patient_info from session (now includes patient_uuid)
+            if patient_info and patient_info.get("patient_uuid"):
                 patient_uuid = patient_info.get("patient_uuid")
-            # Additional fallback - if we have consultation_data with patient details, extract UUID  
-            if not patient_uuid and consultation_data:
-                # Try to get UUID from nested patient data
-                raw_response = consultation_data.get("raw_pradhi_json") or consultation_data.get("raw_pradhi_response")
-                if isinstance(raw_response, str) and 'patient_info' in raw_response:
-                    # UUID should be available in the consultation record
-                    patient_uuid = "048a8a58-d7df-4647-b529-c4d005cb6a15"  # From the logs - this is the actual UUID for OneHat ID 52349
-            # Final mapping based on OneHat ID if needed
-            if not patient_uuid and patient_onehat_id == "52349":
-                patient_uuid = "048a8a58-d7df-4647-b529-c4d005cb6a15"  # Hardcode mapping for this patient from logs
+            # Secondary source: consultation_data if available
+            elif consultation_data and consultation_data.get("patient_uuid"):
+                patient_uuid = consultation_data.get("patient_uuid")
+            # Fallback: Check if patient_info has 'id' field (Supabase UUID)
+            elif patient_info and patient_info.get("id"):
+                patient_uuid = patient_info.get("id")
+                logger.info(f"🔄 Using patient_info.id as UUID fallback: {patient_uuid}")
+            
+            # Log UUID extraction for debugging
+            if patient_uuid:
+                logger.info(f"✅ Patient UUID extracted from session: {patient_uuid}")
+            else:
+                logger.error(f"❌ No patient UUID found in session data")
+                logger.error(f"   - patient_info keys: {list(patient_info.keys()) if patient_info else 'None'}")
+                logger.error(f"   - consultation_data keys: {list(consultation_data.keys()) if consultation_data else 'None'}")
+                # Don't raise error, continue with None UUID for now
+                logger.warning("⚠️ Continuing with NULL patient_uuid")
             
             # Determine patient chosen doctor onehat_id
             patient_chosen_doctor_onehat_id = None
