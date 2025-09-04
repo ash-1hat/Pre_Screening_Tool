@@ -71,6 +71,17 @@ class MedicalExpertService:
             for i, exchange in enumerate(conversation_history, 1):
                 history_text += f"Q{i}: {exchange['question']}\nA{i}: {exchange['answer']}\n\n"
             
+            # Debug conversation history for language detection
+            print(f"[LANGUAGE_DEBUG] Question {question_number} - Conversation history:")
+            print(f"[LANGUAGE_DEBUG] {history_text}")
+            if conversation_history:
+                last_answer = conversation_history[-1]['answer']
+                print(f"[LANGUAGE_DEBUG] Last patient answer: '{last_answer}'")
+                # Simple language detection
+                has_english = any(c.isascii() and c.isalpha() for c in last_answer)
+                has_tamil = any('\u0b80' <= c <= '\u0bff' for c in last_answer)
+                print(f"[LANGUAGE_DEBUG] Contains English: {has_english}, Contains Tamil: {has_tamil}")
+            
             # Use optimized user prompt template
             user_prompt_template = self.prompts.get('user instructions for interview', '')
             
@@ -97,6 +108,12 @@ Instructions: Ask ONE focused medical question. If this is question 1, ask about
                     unknown_count=unknown_count,
                     conversation_history=history_text if history_text else "No previous questions - start with chief complaint"
                 )
+            
+            # Add language instruction based on question number
+            if question_number == 1:
+                question_input += "\n\nIMPORTANT: Respond in Tamil."
+            else:
+                question_input += "\n\nIMPORTANT: Look at the patient's most recent answer in the conversation history. Respond in the same language the patient used in their last answer."
             
             # Get system instruction and debug it
             system_instruction = self.get_medical_expert_system_instruction(patient)

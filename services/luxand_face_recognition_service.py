@@ -149,6 +149,7 @@ class LuxandFaceRecognitionService:
             # Format for frontend consumption (only required fields)
             frontend_patient_data = {
                 "patient_id": str(onehat_patient_id),
+                "patient_uuid": str(patient_info.get("id", "")),  # Add UUID for session storage
                 "name": patient_info.get("full_name", "Unknown"),
                 "mobile": patient_info.get("phone_number", "N/A"),
                 "age": patient_info.get("age", "N/A"),

@@ -96,6 +96,12 @@ class FollowupService:
                 conversation_history=conversation_history
             )
             
+            # Add language instruction based on question number
+            if question_number == 1:
+                formatted_user_prompt += "\n\nIMPORTANT: Respond in Tamil."
+            else:
+                formatted_user_prompt += "\n\nIMPORTANT: Look at the patient's most recent answer in the conversation history. Respond in the same language the patient used in their last answer."
+            
             print(f"[FOLLOWUP_DEBUG] Calling Gemini API for question generation")
             
             # Generate question using Gemini
@@ -127,25 +133,6 @@ class FollowupService:
                     if "INTERVIEW_COMPLETE" in generated_question:
                         return "INTERVIEW_COMPLETE"
                         
-                    # Check for repetition by looking at conversation history
-                    if conversation_history and generated_question:
-                        # Extract previous questions to avoid repetition
-                        previous_questions = []
-                        for line in conversation_history.split('\n'):
-                            if line.startswith('Q'):
-                                prev_q = line.split(': ', 1)[1] if ': ' in line else ""
-                                previous_questions.append(prev_q.lower().strip())
-                        
-                        # If this question is too similar to previous ones, generate alternative
-                        current_q_lower = generated_question.lower().strip()
-                        for prev_q in previous_questions:
-                            if (prev_q and len(prev_q) > 10 and 
-                                (current_q_lower in prev_q or prev_q in current_q_lower or
-                                 any(word in current_q_lower and word in prev_q 
-                                     for word in ['feeling', 'medication', 'symptom'] if len(word) > 5))):
-                                print(f"[FOLLOWUP_DEBUG] Question repetition detected, using fallback")
-                                return self._generate_alternative_question(question_number, conversation_history)
-                    
                     return generated_question or "Can you tell me more about your current condition?"
                     
                 except json.JSONDecodeError as e:
@@ -172,21 +159,46 @@ class FollowupService:
     
     def _generate_alternative_question(self, question_number: int, conversation_history: str) -> str:
         """Generate alternative questions when AI fails or repeats"""
+        # Detect language from conversation history
+        patient_using_english = False
+        if conversation_history:
+            # Look for patient answers (A1, A2, etc.)
+            lines = conversation_history.split('\n')
+            for line in lines:
+                if line.strip().startswith('A') and ':' in line:
+                    answer = line.split(':', 1)[1].strip()
+                    # Simple check: if answer contains English alphabet without Tamil script
+                    has_english = any(c.isascii() and c.isalpha() for c in answer)
+                    has_tamil = any('\u0b80' <= c <= '\u0bff' for c in answer)
+                    if has_english and not has_tamil:
+                        patient_using_english = True
+                        break
+        
         # Analyze what has been asked already
         asked_about_medications = "medic" in conversation_history.lower()
         asked_about_feelings = "feel" in conversation_history.lower() or "how are" in conversation_history.lower()
         asked_about_symptoms = "symptom" in conversation_history.lower()
         asked_about_activities = "activit" in conversation_history.lower() or "exercise" in conversation_history.lower()
         
-        # Generate unique questions based on what hasn't been covered
-        alternative_questions = [
-            "Have you been taking your prescribed medications as directed?",
-            "Are you experiencing any pain or discomfort currently?", 
-            "Have you noticed any changes in your condition since the last visit?",
-            "Are you following any specific dietary or activity restrictions?",
-            "Have you completed any recommended tests or follow-up procedures?",
-            "Is there anything specific that's been bothering you lately?"
-        ]
+        # Generate unique questions based on what hasn't been covered and language preference
+        if patient_using_english:
+            alternative_questions = [
+                "Have you been taking your prescribed medications as directed?",
+                "Are you experiencing any pain or discomfort currently?", 
+                "Have you noticed any changes in your condition since the last visit?",
+                "Are you following any specific dietary or activity restrictions?",
+                "Have you completed any recommended tests or follow-up procedures?",
+                "Is there anything specific that's been bothering you lately?"
+            ]
+        else:
+            alternative_questions = [
+                "நீங்கள் பரிந்துரைக்கப்பட்ட மருந்துகளை தவறாமல் எடுத்துக்கொள்கிறீர்களா?",
+                "தற்போது உங்களுக்கு ஏதேனும் வலி அல்லது அசௌகரியம் இருக்கிறதா?",
+                "கடைசி வருகைக்குப் பிறகு உங்கள் நிலையில் ஏதேனும் மாற்றங்கள் கவனித்தீர்களா?",
+                "நீங்கள் ஏதேனும் குறிப்பிட்ட உணவு அல்லது செயல்பாட்டு கட்டுப்பாடுகளை பின்பற்றுகிறீர்களா?",
+                "பரிந்துரைக்கப்பட்ட பரிசோதனைகள் அல்லது பின்தொடர்தல் நடைமுறைகளை நீங்கள் முடித்துவிட்டீர்களா?",
+                "உங்களை குறிப்பாக தொந்தரவு செய்யும் ஏதாவது இருக்கிறதா?"
+            ]
         
         # Filter out questions similar to what's already been asked
         available_questions = []
@@ -202,11 +214,17 @@ class FollowupService:
         if available_questions:
             return available_questions[0]
         
-        # Final fallback based on question number
-        if question_number <= 3:
-            return "Can you tell me about your current treatment plan?"
+        # Final fallback based on question number and language
+        if patient_using_english:
+            if question_number <= 3:
+                return "Can you tell me about your current treatment plan?"
+            else:
+                return "Is there anything else you'd like to discuss about your condition?"
         else:
-            return "Is there anything else you'd like to discuss about your condition?"
+            if question_number <= 3:
+                return "உங்கள் தற்போதைய சிகிச்சை திட்டத்தைப் பற்றி சொல்ல முடியுமா?"
+            else:
+                return "உங்கள் நிலையைப் பற்றி வேறு ஏதாவது விவாதிக்க விரும்புகிறீர்களா?"
     
     def generate_followup_assessment(
         self,
