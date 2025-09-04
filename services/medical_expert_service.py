@@ -109,16 +109,17 @@ Instructions: Ask ONE focused medical question. If this is question 1, ask about
                     conversation_history=history_text if history_text else "No previous questions - start with chief complaint"
                 )
             
-            # Add language instruction based on question number
-            if question_number == 1:
-                question_input += "\n\nIMPORTANT: Respond in Tamil."
-            else:
-                question_input += "\n\nIMPORTANT: Look at the patient's most recent answer in the conversation history. Respond in the same language the patient used in their last answer."
-            
             # Get system instruction and debug it
             system_instruction = self.get_medical_expert_system_instruction(patient)
-            print(f"[AI_DEBUG] System instruction length: {len(system_instruction)}")
-            print(f"[AI_DEBUG] System instruction preview: {system_instruction[:200]}...")
+            
+            # Add language instruction to system prompt based on question number
+            if question_number == 1:
+                enhanced_system_instruction = f"{system_instruction}\n\nIMPORTANT: Respond in Tamil."
+            else:
+                enhanced_system_instruction = f"{system_instruction}\n\nIMPORTANT: Look at the patient's most recent answer in the conversation history. Respond in the same language the patient used in their last answer."
+            
+            print(f"[AI_DEBUG] System instruction length: {len(enhanced_system_instruction)}")
+            print(f"[AI_DEBUG] System instruction preview: {enhanced_system_instruction[:200]}...")
             print(f"[AI_DEBUG] User prompt: {question_input}")
             print(f"[AI_DEBUG] Making Gemini API call with model: {self.model}")
             
@@ -134,7 +135,7 @@ Instructions: Ask ONE focused medical question. If this is question 1, ask about
                     )
                 ],
                 config=types.GenerateContentConfig(
-                    system_instruction=system_instruction,
+                    system_instruction=enhanced_system_instruction,
                     max_output_tokens=500,  # Increased to accommodate reasoning tokens
                     temperature=0.7
                 )
@@ -223,14 +224,22 @@ Instructions: Ask ONE focused medical question. If this is question 1, ask about
             # Get system instruction for assessment
             assessment_system_prompt = self.prompts.get('sytem instructions for assessment', '')
             
-            # Use Gemini with structured JSON output
+            print(f"[MEDICAL_DEBUG] Calling Gemini API for question generation")
+            
+            # Add language instruction to system prompt based on question number
+            if len(conversation_history) == 1:
+                enhanced_system_prompt = f"{assessment_system_prompt}\n\nIMPORTANT: Respond in Tamil."
+            else:
+                enhanced_system_prompt = f"{assessment_system_prompt}\n\nIMPORTANT: Look at the patient's most recent answer in the conversation history. Respond in the same language the patient used in their last answer."
+            
+            # Generate question using Gemini
             response = self.client.models.generate_content(
                 model=self.model,
                 contents=[
                     types.Content(
                         role="user",
                         parts=[
-                            types.Part(text=assessment_input)
+                            types.Part(text=f"{enhanced_system_prompt}\n\n{assessment_input}")
                         ]
                     )
                 ],

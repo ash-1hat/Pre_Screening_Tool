@@ -96,13 +96,13 @@ class FollowupService:
                 conversation_history=conversation_history
             )
             
-            # Add language instruction based on question number
-            if question_number == 1:
-                formatted_user_prompt += "\n\nIMPORTANT: Respond in Tamil."
-            else:
-                formatted_user_prompt += "\n\nIMPORTANT: Look at the patient's most recent answer in the conversation history. Respond in the same language the patient used in their last answer."
-            
             print(f"[FOLLOWUP_DEBUG] Calling Gemini API for question generation")
+            
+            # Add language instruction to system prompt based on question number
+            if question_number == 1:
+                enhanced_system_prompt = f"{system_prompt}\n\nIMPORTANT: Respond in Tamil."
+            else:
+                enhanced_system_prompt = f"{system_prompt}\n\nIMPORTANT: Look at the patient's most recent answer in the conversation history. Respond in the same language the patient used in their last answer."
             
             # Generate question using Gemini
             response = self.client.models.generate_content(
@@ -111,7 +111,7 @@ class FollowupService:
                     types.Content(
                         role="user",
                         parts=[
-                            types.Part(text=f"{system_prompt}\n\n{formatted_user_prompt}")
+                            types.Part(text=f"{enhanced_system_prompt}\n\n{formatted_user_prompt}")
                         ]
                     )
                 ],

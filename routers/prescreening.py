@@ -29,7 +29,7 @@ async def accept_prescreening(request: AcceptPrescreeningRequest):
         logger.info(f"📋 Processing pre-screening acceptance for session: {request.session_id}")
         
         # Get session data using custom session service
-        session = get_session(request.session_id)
+        session = await get_session(request.session_id)
         if not session:
             logger.error(f"❌ Session not found: {request.session_id}")
             raise HTTPException(status_code=404, detail="Session not found")

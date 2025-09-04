@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime
 
 from models.patient import PatientCreate, PatientInfo, PatientResponse
-from services.session_service import get_or_create_session, sessions
+from services.session_service import get_or_create_session, sessions, update_session
 
 router = APIRouter()
 

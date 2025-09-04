@@ -284,11 +284,13 @@ class PatientFormHandler {
     }
 
     proceedToInterview() {
-        const patientData = utils.getPatientData();
-        if (patientData) {
-            utils.goToInterviewPage();
+        // Get session_id from sessionStorage (set during patient data storage)
+        const sessionId = sessionStorage.getItem('currentSessionId');
+        if (sessionId) {
+            // Navigate to interview page with session_id
+            window.location.href = `/static/interview.html?session_id=${sessionId}`;
         } else {
-            alert('Patient data not found. Please register again.');
+            alert('Session not found. Please try again.');
             this.editInformation();
         }
     }

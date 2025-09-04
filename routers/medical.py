@@ -39,7 +39,7 @@ async def start_medical_interview(request: QuestionRequest):
     try:
         # Get patient session
         print(f"Getting session for session_id: {request.session_id}")
-        session = get_session(request.session_id)
+        session = await get_session(request.session_id)
         if not session:
             raise HTTPException(status_code=404, detail="Session not found")
         
@@ -159,7 +159,7 @@ async def submit_patient_answer(submission: AnswerSubmission):
         raise HTTPException(status_code=400, detail="Interview session is not active")
     
     # Get patient info from main session
-    session = get_session(submission.session_id)
+    session = await get_session(submission.session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     

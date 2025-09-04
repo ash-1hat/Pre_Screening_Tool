@@ -371,6 +371,8 @@
 </head>
 <body>
     <div class="container">
+        <script src="/static/js/utils.js?v=4"></script>
+        <script src="/static/js/api.js?v=4"></script>
         <div class="header">
             <img src="static/1hat-logo.png" alt="1hat Logo" style="width: 80px; height: 80px; margin-bottom: 20px; object-fit: contain;">
             <h1>👤 Patient Details</h1>
@@ -447,7 +449,7 @@
                 const sessionId = sessionStorage.getItem('sessionId');
                 if (!sessionId) return;
                 
-                await fetch('/api/store-session-data', {
+                const response = await fetch('/api/store-session-data', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -458,6 +460,19 @@
                         consultation_data: consultationData
                     })
                 });
+                
+                const data = await response.json();
+                console.log('Session storage response:', data);
+                
+                // If backend returns a new session_id, update sessionStorage
+                if (data.session_id && data.session_id !== sessionId) {
+                    console.log('Updating session_id from backend:', data.session_id);
+                    sessionStorage.setItem('sessionId', data.session_id);
+                    return data.session_id; // Return the new session_id
+                }
+                
+                return sessionId; // Return existing session_id
+                
             } catch (error) {
                 console.error('Error storing session data:', error);
             }
@@ -484,7 +499,13 @@
             
             // Store session data in backend for interview endpoints
             if (patientData) {
-                await storeSessionData(patientData, consultationData);
+                console.log('DEBUG: About to store session data, current sessionId:', sessionStorage.getItem('sessionId'));
+                const updatedSessionId = await storeSessionData(patientData, consultationData);
+                console.log('DEBUG: Received updated sessionId:', updatedSessionId);
+                if (updatedSessionId) {
+                    sessionStorage.setItem('sessionId', updatedSessionId);
+                    console.log('DEBUG: Updated sessionStorage with:', updatedSessionId);
+                }
             }
 
             if (!patientData || !patientData.name) {
@@ -669,12 +690,32 @@
                 // Store the selection for non-dropdown options
                 if (option === 'followup') {
                     const consultationData = JSON.parse(sessionStorage.getItem('consultationData') || 'null');
-                    sessionStorage.setItem('selectedDoctorChoice', JSON.stringify({
+                    const followupSelection = {
                         type: 'followup',
                         doctor_id: consultationData?.doctor_onehat_id || consultationData?.doctor_uuid,
                         doctor_name: consultationData?.doctor_name,
                         doctor_specialty: consultationData?.doctor_specialty
-                    }));
+                    };
+                    
+                    sessionStorage.setItem('selectedDoctorChoice', JSON.stringify(followupSelection));
+                    
+                    // Immediately store in database session
+                    fetch('/api/log-doctor-selection', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: 'Doctor selected for follow-up visit',
+                            doctor_name: followupSelection.doctor_name,
+                            doctor_id: followupSelection.doctor_id,
+                            selection_type: followupSelection.type,
+                            session_id: sessionStorage.getItem('sessionId')
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => console.log('Follow-up doctor selection stored:', data))
+                    .catch(error => console.error('Error storing follow-up doctor selection:', error));
                 }
                 
                 // Update display
@@ -742,13 +783,33 @@
                             console.log('Could not get doctor ID:', e);
                         }
                         
-                        sessionStorage.setItem('selectedDoctorChoice', JSON.stringify({
+                        const doctorSelection = {
                             type: 'new',
                             doctor_id: doctorId,
                             doctor_name: this.value,
                             doctor_specialty: selectedDepartment,
                             department_name: selectedDepartment
-                        }));
+                        };
+                        
+                        sessionStorage.setItem('selectedDoctorChoice', JSON.stringify(doctorSelection));
+                        
+                        // Immediately store in database session
+                        fetch('/api/log-doctor-selection', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                message: 'Doctor selected for new visit',
+                                doctor_name: doctorSelection.doctor_name,
+                                doctor_id: doctorSelection.doctor_id,
+                                selection_type: doctorSelection.type,
+                                session_id: sessionStorage.getItem('sessionId')
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => console.log('Doctor selection stored:', data))
+                        .catch(error => console.error('Error storing doctor selection:', error));
                         
                         // Update display
                         updateSelectedDoctorDisplay();
@@ -825,15 +886,35 @@
                 // Store selection type for interview page to determine which service to use
                 sessionStorage.setItem('interviewType', selectedDoctorChoice.type || 'help');
                 
-                // Navigate to interview page
-                window.location.href = '/interview';
+                // Navigate to interview page with session_id
+                const sessionId = sessionStorage.getItem('sessionId');
+                console.log('DEBUG: Current sessionId before navigation:', sessionId);
+                console.log('DEBUG: All sessionStorage keys:', Object.keys(sessionStorage));
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    const key = sessionStorage.key(i);
+                    console.log(`DEBUG: ${key} = ${sessionStorage.getItem(key)}`);
+                }
+                if (sessionId) {
+                    const targetUrl = `/static/interview.html?session_id=${sessionId}&t=${Date.now()}`;
+                    console.log('DEBUG: Navigating to:', targetUrl);
+                    window.location.href = targetUrl;
+                } else {
+                    console.error('No session ID found');
+                    window.location.href = '/static/interview.html';
+                }
             })
             .catch(error => {
                 console.error('Error logging doctor selection:', error);
                 // Continue anyway since logging is not critical
                 const selectedDoctorChoice = JSON.parse(sessionStorage.getItem('selectedDoctorChoice') || '{}');
                 sessionStorage.setItem('interviewType', selectedDoctorChoice.type || 'help');
-                window.location.href = '/interview';
+                const sessionId = sessionStorage.getItem('sessionId');
+                if (sessionId) {
+                    window.location.href = `/static/interview.html?session_id=${sessionId}`;
+                } else {
+                    console.error('No session ID found');
+                    window.location.href = '/static/interview.html';
+                }
             });
         }
 

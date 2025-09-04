@@ -8,6 +8,7 @@ from pydantic import BaseModel, validator
 from typing import Optional, Dict, Any
 from services.supabase_service import supabase_service
 from services.luxand_face_recognition_service import LuxandFaceRecognitionService
+from services.session_service import sessions, update_session, get_session
 import logging
 
 logger = logging.getLogger(__name__)
@@ -185,26 +186,33 @@ async def log_doctor_selection(request: dict):
         logger.info("=" * 60)
         
         # Store doctor selection in session for interview routing
-        from services.session_service import sessions
         
         # Get session ID from request headers or body
         session_id = request.get("session_id")
-        if not session_id:
-            # Try to get from existing sessions (fallback)
-            for sid, session_data in sessions.items():
-                if session_data.get("patient_info"):
-                    session_id = sid
-                    break
         
-        if session_id and session_id in sessions:
-            sessions[session_id]["selected_doctor_choice"] = {
-                "type": selection_type,
-                "doctor_name": doctor_name,
-                "doctor_id": doctor_id
-            }
-            logger.info(f"✅ [SESSION] Stored doctor selection in session {session_id}")
+        if session_id:
+            # Get session from database
+            session = await get_session(session_id)
+            if session:
+                # Update session with doctor selection
+                session["selected_doctor_choice"] = {
+                    "type": selection_type,
+                    "doctor_name": doctor_name,
+                    "doctor_id": doctor_id
+                }
+                
+                # Update session in database to persist doctor selection
+                await update_session(session_id, session)
+                
+                # Also update in-memory sessions for compatibility
+                if session_id in sessions:
+                    sessions[session_id]["selected_doctor_choice"] = session["selected_doctor_choice"]
+                
+                logger.info(f"✅ [SESSION] Stored doctor selection in session {session_id}")
+            else:
+                logger.warning(f"⚠️ [SESSION] Could not find session in database: {session_id}")
         else:
-            logger.warning(f"⚠️ [SESSION] Could not store doctor selection - session not found")
+            logger.warning(f"⚠️ [SESSION] No session_id provided in request")
         
         return {"success": True, "message": "Doctor selection logged"}
         

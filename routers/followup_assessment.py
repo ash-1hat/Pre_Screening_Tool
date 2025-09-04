@@ -26,7 +26,7 @@ async def generate_followup_assessment(request: dict):
         logger.info(f"🔄 [FOLLOWUP_ASSESSMENT] Generating assessment for session: {session_id}")
         
         # Get main session data
-        session = get_session(session_id)
+        session = await get_session(session_id)
         if not session:
             logger.error(f"❌ [FOLLOWUP_ASSESSMENT] Session not found: {session_id}")
             raise HTTPException(status_code=404, detail="Session not found")

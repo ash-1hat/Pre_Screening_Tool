@@ -5,7 +5,7 @@ Medical assessment API endpoints
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from services.medical_expert_service import MedicalExpertService
-from services.session_service import get_session
+from services.session_service import get_session, update_session
 from services.export_service import export_service
 from services.prescreening_service import prescreening_service
 from datetime import datetime
@@ -32,7 +32,7 @@ async def generate_medical_assessment(request: AssessmentRequest):
         raise HTTPException(status_code=400, detail="No interview data available")
     
     # Get patient info
-    session = get_session(request.session_id)
+    session = await get_session(request.session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     
@@ -101,9 +101,10 @@ async def generate_medical_assessment(request: AssessmentRequest):
             selected_doctor_choice = session.get("selected_doctor_choice", {})
             
             # Check for different visit types based on session data
-            if selected_doctor_choice.get("selection_type") == "followup":
+            selection_type = selected_doctor_choice.get("type") or selected_doctor_choice.get("selection_type")
+            if selection_type == "followup":
                 visit_type = "follow-up"
-            elif selected_doctor_choice.get("selection_type") == "new" or selected_doctor_choice.get("doctor_name"):
+            elif selection_type == "new" or selected_doctor_choice.get("doctor_name"):
                 visit_type = "new-doctor"
             else:
                 visit_type = "ai-help"  # Default for medical assessment endpoint
@@ -133,6 +134,9 @@ async def generate_medical_assessment(request: AssessmentRequest):
             # Store pre-screening data in session for later acceptance
             session["prescreening_data"] = prescreening_data
             
+            # Update session in database
+            await update_session(request.session_id, session)
+            
             # Print pre-screening JSON to terminal
             prescreening_service.print_prescreening_json(prescreening_data)
             
@@ -149,6 +153,10 @@ async def generate_medical_assessment(request: AssessmentRequest):
                 "department_recommendations": doctor_recs,
                 "assessment_timestamp": datetime.now().isoformat()
             }
+            
+            # Update session in database with AI assessment results
+            await update_session(request.session_id, session)
+            
             print(f"[SESSION_UPDATE] Updated session with AI recommendations: dept={assessment_result.get('recommended_department')}, doctor={assessment_result.get('recommended_doctor')}")
         except Exception as e:
             print(f"[SESSION_ERROR] Failed to update session with AI recommendations: {e}")

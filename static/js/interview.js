@@ -6,8 +6,17 @@
 class MedicalInterviewHandler {
     constructor() {
         console.log('[FRONTEND_DEBUG] MedicalInterviewHandler constructor called');
-        this.patientData = utils.getPatientData();
-        console.log('[FRONTEND_DEBUG] Patient data:', this.patientData);
+        this.patientData = null;
+        
+        // Check if APIClient is available
+        if (typeof APIClient === 'undefined') {
+            console.error('[FRONTEND_DEBUG] APIClient class not found');
+            throw new Error('APIClient class not available');
+        }
+        
+        this.apiClient = new APIClient();
+        console.log('[FRONTEND_DEBUG] APIClient instance created:', this.apiClient);
+        console.log('[FRONTEND_DEBUG] APIClient methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(this.apiClient)));
         
         this.chatMessages = document.getElementById('chat-messages');
         this.chatInputArea = document.getElementById('chat-input-area');
@@ -36,11 +45,43 @@ class MedicalInterviewHandler {
         this.init();
     }
 
-    init() {
-        this.displayPatientInfo();
-        this.setupEventListeners();
-        this.startInterview();
-        this.setWelcomeTime();
+    async init() {
+        try {
+            // Load patient data from session using direct API call as fallback
+            console.log('[FRONTEND_DEBUG] Loading patient data...');
+            
+            if (typeof this.apiClient.getPatientData === 'function') {
+                console.log('[FRONTEND_DEBUG] Using APIClient.getPatientData method');
+                this.patientData = await this.apiClient.getPatientData();
+            } else {
+                console.log('[FRONTEND_DEBUG] Using fallback method to get patient data');
+                // Fallback: get session_id from URL and make direct API call
+                const urlParams = new URLSearchParams(window.location.search);
+                const sessionId = urlParams.get('session_id');
+                
+                if (!sessionId) {
+                    throw new Error('No session ID found in URL');
+                }
+                
+                const response = await fetch(`/api/session/${sessionId}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to get session data: ${response.status}`);
+                }
+                
+                const sessionData = await response.json();
+                this.patientData = sessionData.patient_info;
+            }
+            
+            console.log('[FRONTEND_DEBUG] Patient data loaded:', this.patientData);
+            
+            this.displayPatientInfo();
+            this.setupEventListeners();
+            this.startInterview();
+            this.setWelcomeTime();
+        } catch (error) {
+            console.error('[FRONTEND_DEBUG] Failed to load patient data:', error);
+            this.showError('Failed to load patient data. Please try again.');
+        }
     }
 
     displayPatientInfo() {
@@ -53,10 +94,22 @@ class MedicalInterviewHandler {
         }
     }
 
+    showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+                ${message}
+            </div>
+        `;
+        document.body.insertBefore(errorDiv, document.body.firstChild);
+    }
+
     setWelcomeTime() {
         const welcomeTime = document.getElementById('welcome-time');
         if (welcomeTime) {
-            welcomeTime.textContent = utils.formatTime();
+            welcomeTime.textContent = window.utils ? utils.formatTime() : new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         }
     }
 

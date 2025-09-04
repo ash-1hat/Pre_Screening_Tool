@@ -14,7 +14,7 @@ from models.medical import (
     AnswerResponse, InterviewSession, QuestionAnswer, InterviewStatus
 )
 from services.followup_service import followup_service
-from services.session_service import sessions, get_session
+from services.session_service import sessions, get_session, update_session
 from services.supabase_service import supabase_service
 from services.prescreening_service import prescreening_service
 import logging
@@ -33,7 +33,7 @@ async def start_followup_interview(request: QuestionRequest):
         logger.info(f"🔄 [FOLLOWUP] Starting follow-up interview for session: {request.session_id}")
         
         # Get patient session
-        session = get_session(request.session_id)
+        session = await get_session(request.session_id)
         if not session:
             logger.error(f"❌ [FOLLOWUP] Session not found: {request.session_id}")
             raise HTTPException(status_code=404, detail="Session not found")
@@ -269,7 +269,7 @@ async def submit_followup_answer(submission: AnswerSubmission):
         raise HTTPException(status_code=400, detail="Follow-up interview session is not active")
     
     # Get patient and consultation info from main session
-    session = get_session(submission.session_id)
+    session = await get_session(submission.session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     
@@ -446,7 +446,7 @@ async def generate_followup_assessment(request: QuestionRequest):
             raise HTTPException(status_code=400, detail="Interview must be completed before generating assessment")
         
         # Get patient session data
-        session = get_session(request.session_id)
+        session = await get_session(request.session_id)
         if not session:
             logger.error(f"❌ [FOLLOWUP] Session not found: {request.session_id}")
             raise HTTPException(status_code=404, detail="Session not found")
@@ -518,6 +518,9 @@ Prescription: {pradhi_data.get('insights', {}).get('Prescription Data', [])}
             
             # Store pre-screening data in session for later acceptance
             session["prescreening_data"] = prescreening_data
+            
+            # Update session in database
+            await update_session(request.session_id, session)
             
             # Print pre-screening JSON to terminal
             prescreening_service.print_prescreening_json(prescreening_data)
