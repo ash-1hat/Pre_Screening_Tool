@@ -5,7 +5,6 @@ Handles patient identification through facial recognition
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from fastapi.responses import JSONResponse
-from services.face_recognition_service import FaceRecognitionService
 from services.luxand_face_recognition_service import LuxandFaceRecognitionService
 from models.patient import FaceRecognitionResult
 import logging
@@ -16,10 +15,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Face Recognition"])
 
-# Dependency to get CompreFace recognition service
-def get_face_recognition_service():
-    return FaceRecognitionService()
-
 # Dependency to get Luxand recognition service
 def get_luxand_face_recognition_service():
     return LuxandFaceRecognitionService()
@@ -27,30 +22,30 @@ def get_luxand_face_recognition_service():
 @router.post("/patients/face-recognition", response_model=FaceRecognitionResult)
 async def recognize_patient(
     image: UploadFile = File(..., description="Patient's face image"),
-    face_service: FaceRecognitionService = Depends(get_face_recognition_service)
+    luxand_service: LuxandFaceRecognitionService = Depends(get_luxand_face_recognition_service)
 ):
     """
-    Recognize patient from uploaded face image using CompreFace and return patient details
+    Recognize patient from uploaded face image using Luxand Cloud API and return patient details
     """
     try:
         logger.info(f"🎯 Face recognition request received - File: {image.filename}")
-        logger.info("🔍 DEBUG: Using COMPREFACE service for face recognition")
+        logger.info("🔍 DEBUG: Using LUXAND service for face recognition")
         
         # Validate image file
         if not image.content_type.startswith('image/'):
             raise HTTPException(status_code=400, detail="File must be an image")
         
-        # Perform face recognition and get patient details
-        result = await face_service.recognize_and_get_patient_details(image)
+        # Perform face recognition and get patient details using Luxand
+        result = await luxand_service.recognize_and_get_patient_details(image)
         
         if result["success"]:
-            logger.info(f"✅ Patient recognized successfully via CompreFace")
+            logger.info(f"✅ Patient recognized successfully via Luxand")
             return JSONResponse(
                 status_code=200,
                 content=result
             )
         else:
-            logger.warning(f"❌ Face recognition failed via CompreFace: {result['message']}")
+            logger.warning(f"❌ Face recognition failed via Luxand: {result['message']}")
             return JSONResponse(
                 status_code=404,
                 content=result
@@ -148,20 +143,4 @@ async def add_patient_face_luxand(
 
 # Legacy test endpoint removed - functionality integrated into main face recognition endpoint
 
-@router.get("/patient-details/{patient_id}")
-async def get_patient_details(
-    patient_id: str,
-    face_service: FaceRecognitionService = Depends(get_face_recognition_service)
-):
-    """
-    Get patient details by patient ID (for testing)
-    """
-    patient_details = face_service.get_patient_details(patient_id)
-    
-    if not patient_details:
-        raise HTTPException(status_code=404, detail=f"Patient with ID {patient_id} not found")
-    
-    return {
-        "success": True,
-        "patient": patient_details
-    }
+# Legacy endpoint removed - functionality integrated into main face recognition endpoints
